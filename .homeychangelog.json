@@ -1,4 +1,8 @@
 {
+  "1.12.0": {
+    "en": "Better device matching: via Homey Link, then name + room, one to one; shows how each device was matched; all devices can be shown",
+    "nl": "Betere koppeling van toestellen: via Homey Link, dan naam + ruimte, één op één; toont hoe elk toestel gekoppeld is; alle toestellen kunnen getoond worden"
+  },
   "1.11.0": {
     "en": "Users: invite the users of the other Homey with the same role; users are matched by their Homey account",
     "nl": "Gebruikers: de gebruikers van de andere Homey uitnodigen met dezelfde rol; gebruikers worden herkend aan hun Homey-account"

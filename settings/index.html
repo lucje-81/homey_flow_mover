@@ -28,7 +28,8 @@
     .dev { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 7px 0; border-bottom: 1px solid #f0f0f0; }
     .dev .nm { flex: 1 1 160px; min-width: 0; }
     .dev .nm b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .dev .nm small { color: #888; }
+    .dev .nm small { display: block; color: #888; font-size: 12px; }
+    .dev .nm small.warn { color: #8a5a00; }
     .dev select { flex: 1 1 180px; min-width: 0; max-width: 100%; }
     .dev.missing select { border-color: #e3a3ad; background: #fff5f6; }
     .flow { border-bottom: 1px solid #f0f0f0; padding: 7px 0; }
@@ -347,18 +348,27 @@
     // ---- step 2
     function renderDevices() {
       var only = $('onlyMissing').checked;
-      var list = data.devices.filter(function (d) { return !only || !d.target; });
-      if (!data.devices.length) { $('devList').innerHTML = '<div class="empty">' + esc(t('noDevices')) + '</div>'; return; }
-      if (!list.length) { $('devList').innerHTML = '<div class="empty ok">' + esc(t('allMatched')) + '</div>'; return; }
-      var opts = data.targets.map(function (x) { return [x.id, x.name + (x.zone ? ' (' + x.zone + ')' : '')]; });
+      var all = $('allDevices') && $('allDevices').checked;
+      var list = data.devices.filter(function (d) { return (all || d.flows) && (!only || !d.target); });
+      var inFlows = data.devices.filter(function (d) { return d.flows; }).length;
+      var toggle = '<label class="chk" style="margin-top:8px"><input id="allDevices" type="checkbox"' + (all ? ' checked' : '') + '> <span>' + esc(t('allDevices', { n: data.devices.length - inFlows })) + '</span></label>';
+      if (!list.length) { $('devList').innerHTML = '<div class="empty ok">' + esc(t(data.devices.length ? 'allMatched' : 'noDevices')) + '</div>' + toggle; return; }
+      var byId = {};
+      data.targets.forEach(function (x) { byId[x.id] = x; });
+      var label = function (x) { return x.name + (x.zone ? ' (' + x.zone + ')' : ''); };
       $('devList').innerHTML = list.map(function (d) {
+        var first = (d.candidates || []).map(function (id) { return byId[id]; }).filter(Boolean);
+        var opts = '<option value="">' + esc(t('noTarget')) + '</option>';
+        if (first.length) opts += '<optgroup label="' + esc(t('sameName')) + '">' + first.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === d.target ? ' selected' : '') + '>' + esc(label(x)) + '</option>'; }).join('') + '</optgroup><optgroup label="' + esc(t('allTargets')) + '">';
+        opts += data.targets.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === d.target && !first.length ? ' selected' : '') + '>' + esc(label(x)) + '</option>'; }).join('');
+        if (first.length) opts += '</optgroup>';
+        var how = d.how ? t('how_' + d.how) : '';
         return '<div class="dev' + (d.target ? '' : ' missing') + '"><span class="nm"><b>' + esc(d.name) + '</b><small>'
-          + esc([d.zone, d.app, t('usedIn', { n: d.flows })].filter(Boolean).join(' · ')) + '</small>'
-          + (d.otherApp ? '<small class="warn">' + esc(t('otherApp')) + '</small>' : '') + '</span>'
-          + '<select data-src="' + esc(d.id) + '"><option value="">' + esc(t('noTarget')) + '</option>'
-          + opts.map(function (o) { return '<option value="' + esc(o[0]) + '"' + (o[0] === d.target ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('')
-          + '</select></div>';
-      }).join('');
+          + esc([d.zone, d.app, d.flows ? t('usedIn', { n: d.flows }) : ''].filter(Boolean).join(' · ')) + '</small>'
+          + (how ? '<small class="' + (d.target ? '' : 'warn') + '">' + esc(how) + '</small>' : '')
+          + (d.otherApp && d.how !== 'link' ? '<small class="warn">' + esc(t('otherApp')) + '</small>' : '') + '</span>'
+          + '<select data-src="' + esc(d.id) + '">' + opts + '</select></div>';
+      }).join('') + toggle;
     }
 
     // ---- step 3
@@ -569,6 +579,7 @@
         }).catch(function (err) { H.alert(err.message || String(err)); e.target.disabled = false; });
       });
       $('onlyMissing').addEventListener('change', renderDevices);
+      $('devList').addEventListener('change', function (e) { if (e.target.id === 'allDevices') renderDevices(); });
       $('search').addEventListener('input', renderFlows);
       $('migrate').addEventListener('click', migrate);
       $('resetMap').addEventListener('click', function () { api('POST', '/device-map/reset').then(analyse); });

@@ -130,6 +130,8 @@ class FlowMoverApp extends Homey.App {
     const data = {
       devices: byId(devices, (d) => {
         const out = { id: String(d.id).toLowerCase(), name: d.name, zone: d.zone, driverId: d.driverId || d.driverUri, ownerUri: d.ownerUri, class: d.class };
+        // Device ids this device refers to: Homey Link devices keep the id of the original device
+        if (side === 'target') out.refs = [...M.collectUuids([d.data, d.settings, d.settingsObj])].filter((u) => u !== out.id);
         // Groups: keep what is needed to rebuild them (members are found in data/settings)
         if (M.systemDriver(out) === 'group') {
           out.iconOverride = d.iconOverride || null;
@@ -249,15 +251,14 @@ class FlowMoverApp extends Homey.App {
       ...ctx.src.flows.map((f) => M.analyseFlow(f, 'flow', ctx)),
       ...ctx.src.advanced.map((f) => M.analyseFlow(f, 'advanced', ctx)),
     ].sort((a, b) => (a.folderPath + a.name).localeCompare(b.folderPath + b.name));
-    const used = new Set();
-    flows.forEach((f) => f.devices.forEach((d) => used.add(d)));
-    const zoneName = (zones, id) => (zones[id] && zones[id].name) || '';
+    const used = new Set(Object.keys(ctx.src.devices));
+    const zoneName = (zones, id) => M.zonePath(zones, id).join(' / ') || ((zones[String(id || '').toLowerCase()] || {}).name || '');
     const devices = [...used].map((id) => {
       const s = ctx.src.devices[id];
       const m = ctx.deviceMatch[id] || {};
       return {
         id, name: s.name, zone: zoneName(ctx.src.zones, s.zone), app: M.deviceApp(s),
-        target: m.target || null, how: m.how, otherApp: !!m.otherApp,
+        target: m.target || null, how: m.how, otherApp: !!m.otherApp, candidates: m.candidates || [],
         flows: flows.filter((f) => f.devices.includes(id)).length,
       };
     }).sort((a, b) => (a.target ? 1 : 0) - (b.target ? 1 : 0) || a.name.localeCompare(b.name));
