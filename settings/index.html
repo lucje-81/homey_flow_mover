@@ -128,20 +128,28 @@
       <label class="chk"><input id="optEnabled" type="checkbox"> <span data-t="optEnabled"></span></label>
       <label class="chk"><input id="optVars" type="checkbox" checked> <span data-t="optVars"></span></label>
       <label class="chk"><input id="optSkip" type="checkbox" checked> <span data-t="optSkip"></span></label>
+      <label class="chk"><input id="optBridge" type="checkbox" checked> <span data-t="optBridge"></span></label>
+      <div class="row" id="linkRow" style="margin:2px 0 0 24px;font-size:13px"></div>
       <div class="row" style="margin-top:8px"><button id="migrate" class="primary" disabled></button><span class="status" id="migStatus"></span></div>
     </div>
     <ul class="result" id="result"></ul>
     <details class="help"><summary data-t="diag"></summary><pre id="diag" style="white-space:pre-wrap;font-size:11px;user-select:text"></pre></details>
   </div>
 
+  <div class="card off" id="stepSwitch">
+    <h2><span class="n">6</span><span data-t="stepSwitch"></span></h2>
+    <p class="hint" data-t="stepSwitchHint"></p>
+    <div id="switchList"></div>
+  </div>
+
   <div class="card off" id="stepDash">
-    <h2><span class="n">6</span><span data-t="stepDash"></span></h2>
+    <h2><span class="n">7</span><span data-t="stepDash"></span></h2>
     <p class="hint" data-t="stepDashHint"></p>
     <div id="dashList"></div>
   </div>
 
   <div class="card off" id="stepFav">
-    <h2><span class="n">7</span><span data-t="stepFav"></span></h2>
+    <h2><span class="n">8</span><span data-t="stepFav"></span></h2>
     <p class="hint" data-t="stepFavHint"></p>
     <div id="favList"></div>
   </div>
@@ -201,7 +209,10 @@
         $('stepZones').classList.remove('off');
         $('stepDash').classList.remove('off');
         $('stepFav').classList.remove('off');
+        $('stepSwitch').classList.remove('off');
         loadFavorites();
+        loadMoves();
+        if (data.flows.some(function (f) { return f.bridge; })) loadLinkTargets();
         renderDashboards();
         renderZones();
         renderMissing();
@@ -294,6 +305,37 @@
         return '<label class="miss"><input type="checkbox" data-var="' + esc(v.id) + '"' + (v.flows ? ' checked' : '') + '><span class="nm"><b>' + esc(v.name) + '</b><small>'
           + esc(t('type_' + v.type) + ' · ' + t('value') + ': ' + (v.value === '' || v.value == null ? '–' : v.type === 'boolean' ? t(v.value ? 'yes' : 'no') : String(v.value)) + ' · ' + (v.flows ? t('usedIn', { n: v.flows }) : t('notUsed'))) + '</small></span></label>';
       }).join('') + '<div class="row" style="margin-top:8px"><button id="createVars" class="small primary">' + esc(t('createVars')) + '</button><span class="status" id="varStatus"></span></div>';
+    }
+
+    // ---- bridge target (Homey Link) and switching
+    var linkTargets = [];
+    function loadLinkTargets() {
+      api('GET', '/link-targets').then(function (r) {
+        linkTargets = r.targets || [];
+        var chosen = r.chosen && r.chosen.sessionId;
+        if (!linkTargets.length) { $('linkRow').innerHTML = '<span class="warn">' + esc(t('noLinkTargets')) + '</span>'; return; }
+        $('linkRow').innerHTML = '<span>' + esc(t('linkTarget')) + '</span> <select id="linkSel">' + linkTargets.map(function (x) {
+          return '<option value="' + esc(x.sessionId) + '"' + ((chosen ? chosen === x.sessionId : linkTargets.length === 1) ? ' selected' : '') + '>' + esc(x.title || x.name) + '</option>';
+        }).join('') + '</select>';
+        if (!chosen && linkTargets.length === 1) api('POST', '/link-target', { target: linkTargets[0] });
+      }).catch(function (err) { $('linkRow').innerHTML = '<span class="err">' + esc(err.message || err) + '</span>'; });
+    }
+
+    function loadMoves() {
+      api('GET', '/moves').then(function (list) {
+        if (!list.length) { $('switchList').innerHTML = '<div class="empty">' + esc(t('noMoves')) + '</div>'; return; }
+        var pill = function (on, label) {
+          if (on === undefined) return '';
+          var c = on === null ? '#999' : on ? '#2f9e44' : '#bbb';
+          return '<span class="tag" style="background:' + c + ';color:#fff">' + esc(label) + ' ' + (on === null ? '?' : on ? t('on') : t('off')) + '</span>';
+        };
+        $('switchList').innerHTML = '<div class="row"><button class="small" id="swAll">' + esc(t('selectAll')) + '</button><button class="small" id="swNone">' + esc(t('selectNone')) + '</button><button class="small" id="swRefresh" style="margin-left:auto">' + esc(t('refresh')) + '</button></div>'
+          + list.map(function (m) {
+            return '<label class="miss"><input type="checkbox" data-move="' + esc(m.id) + '"><span class="nm"><b>' + esc(m.name) + '</b><small>'
+              + pill(m.pro, t('proLabel')) + ' ' + pill(m.shs, t('shsLabel')) + ' ' + pill(m.bridge, t('bridgeLabel')) + '</small></span></label>';
+          }).join('')
+          + '<div class="row" style="margin-top:8px"><button id="swHere" class="small primary">' + esc(t('switchHere')) + '</button><button id="swBack" class="small">' + esc(t('switchBack')) + '</button><span class="status" id="swStatus"></span></div>';
+      }).catch(function (err) { $('switchList').innerHTML = '<div class="empty err">' + esc(err.message || err) + '</div>'; });
     }
 
     // ---- favorites
@@ -428,7 +470,7 @@
         $('migrate').disabled = true;
         $('migStatus').className = 'status';
         $('migStatus').textContent = t('migrating');
-        api('POST', '/migrate', { ids: ids, keepEnabled: $('optEnabled').checked, createVariables: $('optVars').checked, skipExisting: $('optSkip').checked })
+        api('POST', '/migrate', { ids: ids, keepEnabled: $('optEnabled').checked, createVariables: $('optVars').checked, skipExisting: $('optSkip').checked, bridge: $('optBridge').checked })
           .then(function (res) {
             var ok = res.filter(function (r) { return r.ok && !r.skipped && r.type !== 'variable'; }).length;
             var failed = res.filter(function (r) { return !r.ok; }).length;
@@ -440,6 +482,7 @@
                 + esc(r.ok ? (r.skipped ? t('skipped') : t('created')) : r.error) + '</li>';
             }).join('');
             selected = {};
+            loadMoves();
             return analyse();
           })
           .catch(function (e) {
@@ -458,6 +501,29 @@
       $('search').placeholder = t('search');
       $('keySteps').innerHTML = [1, 2, 3, 4].map(function (i) { return '<li>' + esc(t('key' + i)) + '</li>'; }).join('');
       $('connect').addEventListener('click', connect);
+      $('linkRow').addEventListener('change', function (e) {
+        if (e.target.id !== 'linkSel') return;
+        var x = linkTargets.find(function (l) { return l.sessionId === e.target.value; });
+        api('POST', '/link-target', { target: x });
+      });
+      $('switchList').addEventListener('click', function (e) {
+        var boxes = [].slice.call(document.querySelectorAll('[data-move]'));
+        if (e.target.id === 'swAll' || e.target.id === 'swNone') { boxes.forEach(function (b) { b.checked = e.target.id === 'swAll'; }); return; }
+        if (e.target.id === 'swRefresh') return loadMoves();
+        if (e.target.id !== 'swHere' && e.target.id !== 'swBack') return;
+        var ids = boxes.filter(function (b) { return b.checked; }).map(function (b) { return b.getAttribute('data-move'); });
+        if (!ids.length) return;
+        var to = e.target.id === 'swHere' ? 'here' : 'back';
+        H.confirm(t(to === 'here' ? 'switchHereConfirm' : 'switchBackConfirm', { n: ids.length }), 'warning', function (err, yes) {
+          if (err || !yes) return;
+          $('swStatus').textContent = t('zonesBusy');
+          api('POST', '/switch', { ids: ids, to: to }).then(function (res) {
+            var bad = res.filter(function (r) { return !r.ok; });
+            if (bad.length) H.alert(bad.map(function (r) { return r.name + ': ' + r.error; }).join('\n'));
+            loadMoves();
+          }).catch(function (er) { H.alert(er.message || String(er)); });
+        });
+      });
       $('targetKeySteps').innerHTML = [1, 2, 3].map(function (i) { return '<li>' + esc(t('tkey' + i)) + '</li>'; }).join('');
       $('targetToken').placeholder = t('targetToken');
       $('connectTarget').addEventListener('click', function () {

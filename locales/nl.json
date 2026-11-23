@@ -7,7 +7,9 @@
     "favorites": "De API-sleutel mag je gebruikersgegevens (favorieten) niet lezen. Maak een sleutel aan met het recht Gebruikers en verbind opnieuw.",
     "widgetImport": "Werk Compacte widgets bij naar versie 0.11 of nieuwer en probeer opnieuw",
     "groupMembers": "Geen van de leden is op deze Homey gekoppeld. Voeg de toestellen eerst toe (of via Homey Link).",
-    "noTargetToken": "Vul eerst een API-sleutel van deze Homey in."
+    "noTargetToken": "Vul eerst een API-sleutel van deze Homey in.",
+    "noLinkHomey": "Kies in stap 5 naar welke Homey de brugflows (Homey Link) moeten verwijzen.",
+    "sourceWrite": "de API-sleutel van de andere Homey moet schrijfrechten op Flows hebben"
   },
   "settings": {
     "title": "Flow-verhuizer",
@@ -17,7 +19,7 @@
     "keyHelp": "Hoe maak ik een API-sleutel?",
     "key1": "Open my.homey.app in een browser en kies bovenaan de Homey waar je flows nu staan (bv. de Pro).",
     "key2": "Ga naar Instellingen → API-sleutels → Nieuwe API-sleutel.",
-    "key3": "Geef een naam (bv. Flow-verhuizer) en vink leesrechten aan voor Toestellen, Flows, Logica, Zones, Gebruikers en Dashboards, en het recht Apps (nodig om de instellingen van Compacte widgets mee te nemen).",
+    "key3": "Geef een naam (bv. Flow-verhuizer) en vink aan: Flows (lezen én schrijven, voor brugflows en omschakelen), en leesrechten voor Toestellen, Logica, Zones, Gebruikers en Dashboards, en het recht Apps (nodig om de instellingen van Compacte widgets mee te nemen).",
     "key4": "Kopieer de sleutel en plak hem hieronder. Je kunt hem na het verhuizen weer verwijderen.",
     "address": "IP-adres, bv. 192.168.1.20",
     "token": "API-sleutel",
@@ -181,7 +183,27 @@
     "allDevices": "Ook toestellen tonen die niet in flows staan ({n}) — telt mee voor Kamers en zones",
     "how_values": "gekoppeld op naam + dezelfde actuele waarden",
     "diag": "Diagnose (voor ondersteuning)",
-    "issue_otherApps": "Via een andere app (bv. Homey Link): {names}"
+    "issue_otherApps": "Via een andere app (bv. Homey Link): {names}",
+    "optBridge": "Brugflows maken: triggers die alleen op de andere Homey bestaan (knoppen, afstandsbedieningen via Homey Link) blijven daar en starten de flow hier",
+    "linkTarget": "Flows starten op:",
+    "noLinkTargets": "Geen Homey gevonden in de Homey Link-app van de andere Homey: maak daar één flow met de kaart “Start flow” van Homey Link, dan wordt deze Homey herkend.",
+    "issue_bridge": "Trigger “{name}” bestaat alleen op de andere Homey: wordt een brugflow (op de andere Homey start de trigger deze flow; mappen “Brug naar SHS” en “Brug vanaf Pro”)",
+    "issue_noBridge": "Trigger bestaat alleen op de andere Homey en kan niet automatisch overbrugd worden ({name})",
+    "stepSwitch": "Omschakelen",
+    "stepSwitchHint": "De overgezette flows staan uitgeschakeld. Schakel ze hier per groep om: de flow hier en zijn brugflow gaan aan, de oorspronkelijke flow op de andere Homey gaat uit. Werkt iets niet, dan zet “Terug” alles terug. Hiervoor moet de API-sleutel van de andere Homey schrijfrechten op Flows hebben.",
+    "noMoves": "Nog geen flows overgezet.",
+    "proLabel": "Pro",
+    "shsLabel": "SHS",
+    "bridgeLabel": "Brug",
+    "on": "aan",
+    "off": "uit",
+    "switchHere": "Omschakelen naar deze Homey",
+    "switchBack": "Terug naar de andere Homey",
+    "switchHereConfirm": "{n} flow(s) omschakelen: hier en de brugflow aan, op de andere Homey uit?",
+    "switchBackConfirm": "{n} flow(s) terugzetten: op de andere Homey aan, hier en de brugflow uit?"
   },
-  "copy": "kopie"
+  "copy": "kopie",
+  "bridgeFolder": "Brug naar SHS",
+  "bridgePrefix": "Brug: ",
+  "bridgeFolderHere": "Brug vanaf Pro"
 }

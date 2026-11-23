@@ -1,6 +1,6 @@
 {
   "id": "flow.mover",
-  "version": "1.13.3",
+  "version": "1.14.0",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -109,6 +109,22 @@
     "inviteUsers": {
       "method": "POST",
       "path": "/invite"
+    },
+    "getLinkTargets": {
+      "method": "GET",
+      "path": "/link-targets"
+    },
+    "setLinkTarget": {
+      "method": "POST",
+      "path": "/link-target"
+    },
+    "getMoves": {
+      "method": "GET",
+      "path": "/moves"
+    },
+    "switchFlows": {
+      "method": "POST",
+      "path": "/switch"
     }
   }
 }

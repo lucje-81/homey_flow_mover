@@ -57,6 +57,22 @@ module.exports = {
     return homey.app.inviteUsers(body || {});
   },
 
+  async getLinkTargets({ homey }) {
+    return homey.app.linkTargets();
+  },
+
+  async setLinkTarget({ homey, body }) {
+    return homey.app.setLinkTarget(body || {});
+  },
+
+  async getMoves({ homey }) {
+    return homey.app.listMoves();
+  },
+
+  async switchFlows({ homey, body }) {
+    return homey.app.switchFlows(body || {});
+  },
+
   async refresh({ homey }) {
     return homey.app.refresh();
   },

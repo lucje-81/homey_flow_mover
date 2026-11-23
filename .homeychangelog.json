@@ -1,4 +1,8 @@
 {
+  "1.14.0": {
+    "en": "Bridge flows for triggers that stay on the other Homey (buttons via Homey Link), own folders for bridges on both Homeys, and a Switch over step",
+    "nl": "Brugflows voor triggers die op de andere Homey blijven (knoppen via Homey Link), eigen mappen voor bruggen op beide Homeys, en een stap Omschakelen"
+  },
   "1.13.3": {
     "en": "Zone cards no longer reported separately; clearer zone message; devices via another app on one line",
     "nl": "Zonekaarten niet meer apart gemeld; duidelijkere zonemelding; toestellen via een andere app op één regel"

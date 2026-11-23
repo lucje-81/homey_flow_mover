@@ -7,7 +7,9 @@
     "favorites": "The API key may not read your user data (favorites). Create a key with the Users permission and connect again.",
     "widgetImport": "Update Compact Widgets to version 0.11 or newer and try again",
     "groupMembers": "None of the members is matched on this Homey. Add the devices first (or via Homey Link).",
-    "noTargetToken": "Enter an API key of this Homey first."
+    "noTargetToken": "Enter an API key of this Homey first.",
+    "noLinkHomey": "Choose in step 5 which Homey the bridge flows (Homey Link) should start flows on.",
+    "sourceWrite": "the API key of the other Homey needs write access to Flows"
   },
   "settings": {
     "title": "Flow Mover",
@@ -17,7 +19,7 @@
     "keyHelp": "How do I create an API key?",
     "key1": "Open my.homey.app in a browser and select the Homey that has your flows now (e.g. the Pro) at the top.",
     "key2": "Go to Settings → API Keys → New API Key.",
-    "key3": "Give it a name (e.g. Flow Mover) and tick read access to Devices, Flows, Logic, Zones, Users and Dashboards, and the Apps permission (needed to copy the Compact Widgets settings).",
+    "key3": "Give it a name (e.g. Flow Mover) and tick Flows (read and write, for bridge flows and switching) and read access to Devices, Logic, Zones, Users and Dashboards, and the Apps permission (needed to copy the Compact Widgets settings).",
     "key4": "Copy the key and paste it below. You can delete it again after moving.",
     "address": "IP address, e.g. 192.168.1.20",
     "token": "API key",
@@ -181,7 +183,27 @@
     "allDevices": "Also show devices not used in flows ({n}) — they count for Rooms and zones",
     "how_values": "matched by name + the same current values",
     "diag": "Diagnostics (for support)",
-    "issue_otherApps": "Through another app (e.g. Homey Link): {names}"
+    "issue_otherApps": "Through another app (e.g. Homey Link): {names}",
+    "optBridge": "Create bridge flows: triggers that only exist on the other Homey (buttons, remotes via Homey Link) stay there and start the flow here",
+    "linkTarget": "Start flows on:",
+    "noLinkTargets": "No Homey found in the Homey Link app of the other Homey: create one flow there with the Homey Link card “Start flow”, then this Homey is recognised.",
+    "issue_bridge": "Trigger “{name}” only exists on the other Homey: becomes a bridge flow (on the other Homey the trigger starts this flow; folders “Bridge to SHS” and “Bridge from Pro”)",
+    "issue_noBridge": "Trigger only exists on the other Homey and cannot be bridged automatically ({name})",
+    "stepSwitch": "Switch over",
+    "stepSwitchHint": "The moved flows are disabled. Switch them over here per group: the flow here and its bridge flow are enabled, the original flow on the other Homey is disabled. If something doesn't work, “Back” undoes it. This needs write access to Flows in the API key of the other Homey.",
+    "noMoves": "No flows moved yet.",
+    "proLabel": "Pro",
+    "shsLabel": "SHS",
+    "bridgeLabel": "Bridge",
+    "on": "on",
+    "off": "off",
+    "switchHere": "Switch to this Homey",
+    "switchBack": "Back to the other Homey",
+    "switchHereConfirm": "Switch {n} flow(s): enable here and the bridge flow, disable on the other Homey?",
+    "switchBackConfirm": "Put {n} flow(s) back: enable on the other Homey, disable here and the bridge flow?"
   },
-  "copy": "copy"
+  "copy": "copy",
+  "bridgeFolder": "Bridge to SHS",
+  "bridgePrefix": "Bridge: ",
+  "bridgeFolderHere": "Bridge from Pro"
 }

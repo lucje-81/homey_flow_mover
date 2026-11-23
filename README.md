@@ -20,9 +20,19 @@ Install the app on the Homey that should **receive** the flows (e.g. the Self-Ho
    - = a flow with this name already exists
 
    Move the selected flows with one button.
-6. **Dashboards**: copies dashboards with all widgets, with device, zone and flow ids converted. Optionally also copies (via Compact Widgets 0.11+) the settings of the [Compact Widgets](https://github.com/lucje-81/homey_compact_widgets) app (gauge panels, icons, chosen values), with device ids converted, so those widgets work at once. Columns and widgets get new ids; a dashboard with an existing name is created as "(copy)"
+6. **Switch over**: the moved flows are created disabled. Switch them per group: the flow here (and its bridge flow) is enabled, the original on the other Homey disabled — or back again. Needs write access to Flows in the API key of the other Homey
+7. **Dashboards**: copies dashboards with all widgets, with device, zone and flow ids converted. Optionally also copies (via Compact Widgets 0.11+) the settings of the [Compact Widgets](https://github.com/lucje-81/homey_compact_widgets) app (gauge panels, icons, chosen values), with device ids converted, so those widgets work at once. Columns and widgets get new ids; a dashboard with an existing name is created as "(copy)"
 
-7. **Favorites**: adds your favorite devices and flows of the other Homey to your favorites here (owner account, ids converted, nothing removed, items that cannot be converted are skipped). Do this last so the flows exist. Other users set their own favorites.
+8. **Favorites**: adds your favorite devices and flows of the other Homey to your favorites here (owner account, ids converted, nothing removed, items that cannot be converted are skipped). Do this last so the flows exist. Other users set their own favorites.
+
+## Bridge flows (Homey Pro as Zigbee/Z-Wave bridge)
+
+Devices that stay on the other Homey and come here through Homey Link only offer their values, not the special triggers of their app (e.g. "a button is pressed" on a remote). For such a flow the app creates a **bridge**:
+
+- here: the flow, with that trigger replaced by "This flow is started", in the folder **Bridge from Pro**
+- on the other Homey: a small flow with the original trigger (including its settings) and the Homey Link card "Start flow" on this Homey, in the folder **Bridge to SHS**
+
+Only one such trigger per flow, and its tokens may not be used elsewhere in the flow. The Homey to start flows on is taken from the Homey Link app of the other Homey.
 
 ## What it does when moving
 

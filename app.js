@@ -164,7 +164,11 @@ class FlowMoverApp extends Homey.App {
 
   /** Everything needed to map ids from source to target. */
   async context(selected = []) {
-    const src = await this.load(await this.getSource(), 'source', false);
+    const loaded = await this.load(await this.getSource(), 'source', false);
+    // Bridge flows made by this app on the other Homey are not flows to move
+    const bridges = new Set(Object.values(this.homey.settings.get('moves') || {}).map((m) => m.bridgeId).filter(Boolean).map((x) => String(x).toLowerCase()));
+    const notBridge = (f) => !bridges.has(String(f.id).toLowerCase());
+    const src = { ...loaded, flows: loaded.flows.filter(notBridge), advanced: loaded.advanced.filter(notBridge) };
     const dst = await this.load(await this.targetApi(), 'target', true);
     const overrides = this.homey.settings.get('deviceMap') || {};
     const deviceMatch = M.matchDevices(Object.values(src.devices), Object.values(dst.devices), src.zones, dst.zones, overrides);
@@ -459,6 +463,63 @@ class FlowMoverApp extends Homey.App {
     return results;
   }
 
+  /** Flows moved by this app, with their state on both Homeys. */
+  async listMoves() {
+    const moves = this.homey.settings.get('moves') || {};
+    if (!Object.keys(moves).length) return [];
+    const src = await this.getSource();
+    const dst = await this.targetApi();
+    const [sf, sa, df, da] = await Promise.all([src.flow.getFlows(), src.flow.getAdvancedFlows(), dst.flow.getFlows(), dst.flow.getAdvancedFlows()]);
+    const byId = (...lists) => Object.fromEntries(lists.flatMap((l) => Object.values(l || {})).map((f) => [String(f.id).toLowerCase(), f]));
+    const s = byId(sf, sa);
+    const d = byId(df, da);
+    return Object.entries(moves).map(([srcId, m]) => {
+      const orig = s[srcId];
+      const here = d[String(m.dstId).toLowerCase()];
+      const bridgeFlow = m.bridgeId ? s[String(m.bridgeId).toLowerCase()] : null;
+      return {
+        id: srcId, name: m.name, kind: m.kind,
+        pro: orig ? orig.enabled !== false : null,
+        shs: here ? here.enabled !== false : null,
+        bridge: m.bridgeId ? (bridgeFlow ? bridgeFlow.enabled !== false : null) : undefined,
+      };
+    }).filter((x) => x.shs !== null).sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /** Switch moved flows: to "here" (this Homey on, bridge on, original off) or back to the other Homey. */
+  async switchFlows({ ids, to }) {
+    const moves = this.homey.settings.get('moves') || {};
+    const src = await this.getSource();
+    const dst = await this.targetApi();
+    const here = to === 'here';
+    const set = async (api, kind, id, enabled) => {
+      if (kind === 'advanced') await api.flow.updateAdvancedFlow({ id, advancedflow: { enabled } });
+      else await api.flow.updateFlow({ id, flow: { enabled } });
+    };
+    const ignoreMissing = (err) => { if (!/not.?found|404/i.test(err.message)) throw err; };
+    const results = [];
+    for (const raw of ids || []) {
+      const m = moves[String(raw).toLowerCase()];
+      if (!m) continue;
+      try {
+        // First switch off, then on, so the flow never runs on both Homeys
+        if (here) {
+          await set(src, m.kind, raw, false).catch(ignoreMissing);
+          await set(dst, m.kind, m.dstId, true);
+          if (m.bridgeId) await set(src, 'flow', m.bridgeId, true);
+        } else {
+          if (m.bridgeId) await set(src, 'flow', m.bridgeId, false).catch(ignoreMissing);
+          await set(dst, m.kind, m.dstId, false);
+          await set(src, m.kind, raw, true).catch(ignoreMissing);
+        }
+        results.push({ type: m.kind, name: m.name, ok: true });
+      } catch (err) {
+        results.push({ type: m.kind, name: m.name, ok: false, error: /scope|forbidden|401|403/i.test(err.message) ? `${err.message} — ${this.homey.__('errors.sourceWrite')}` : err.message });
+      }
+    }
+    return results;
+  }
+
   /** Settings of the Compact Widgets app (gauge panels, icons, chosen values), with device ids rewritten. */
   async copyWidgetSettings(ctx) {
     const src = await this.getSource();
@@ -698,9 +759,53 @@ class FlowMoverApp extends Homey.App {
     return t.id;
   }
 
-  async migrate({ ids, keepEnabled = false, createVariables = true, skipExisting = true }) {
+  /** The Homeys this Homey Link app can start flows on, as seen from the other Homey (for the bridge cards). */
+  async linkTargets() {
+    const src = await this.getSource();
+    const found = {};
+    const add = (h) => { if (h && h.sessionId) found[h.sessionId] = { sessionId: h.sessionId, configId: h.configId || 'default', title: h.title || h.name, name: h.name || h.title }; };
+    for (const args of [{ type: 'flowcardaction', uri: 'homey:app:com.athom.link', id: 'start_flow' }, { type: 'flowcardaction', uri: 'homey:app:com.athom.link', id: 'homey:app:com.athom.link:start_flow' }]) {
+      try {
+        const list = await src.flow.getFlowCardAutocomplete({ ...args, name: 'homey', query: '' });
+        (Array.isArray(list) ? list : Object.values(list || {})).forEach(add);
+        if (Object.keys(found).length) break;
+      } catch (err) { /* try the next form / existing cards */ }
+    }
+    // From existing "start flow" cards on the other Homey
+    const data = await this.load(src, 'source', false);
+    for (const f of [...data.flows, ...data.advanced]) {
+      const cards = f.cards ? Object.values(f.cards) : [f.trigger, ...(f.conditions || []), ...(f.actions || [])];
+      for (const c of cards) if (c && /com\.athom\.link:start_flow$/.test(M.fullCardId(c) || '') && c.args) add(c.args.homey);
+    }
+    return { targets: Object.values(found), chosen: this.homey.settings.get('linkHomey') || null };
+  }
+
+  async setLinkTarget({ target }) {
+    this.homey.settings.set('linkHomey', target || null);
+    return true;
+  }
+
+  /** Top-level folder with this name on this Homey (created when missing). */
+  async ensureNamedFolder(api, name, ctx) {
+    const existing = Object.values(ctx.dst.folders).find((x) => M.norm(x.name) === M.norm(name) && !x.parent);
+    if (existing) return existing.id;
+    const f = await api.flow.createFlowFolder({ flowfolder: { name } });
+    ctx.dst.folders[String(f.id).toLowerCase()] = { id: f.id, name, parent: null };
+    return f.id;
+  }
+
+  /** Folder on the other Homey for the bridge flows. */
+  async bridgeFolder(src) {
+    const name = this.homey.__('bridgeFolder');
+    const folders = await src.flow.getFlowFolders();
+    const f = Object.values(folders).find((x) => M.norm(x.name) === M.norm(name) && !x.parent);
+    return f ? f.id : (await src.flow.createFlowFolder({ flowfolder: { name } })).id;
+  }
+
+  async migrate({ ids, keepEnabled = false, createVariables = true, skipExisting = true, bridge = true }) {
     this.cache = {};
     const ctx = await this.context(ids || []);
+    const target = await this.targetApi();
     const wanted = new Set((ids || []).map((x) => String(x).toLowerCase()));
     const all = [
       ...ctx.src.flows.map((f) => ({ flow: f, kind: 'flow' })),
@@ -726,36 +831,62 @@ class FlowMoverApp extends Homey.App {
     }
 
     const createdFlows = [];
+    const moves = { ...(this.homey.settings.get('moves') || {}) };
+    let linkHomey = this.homey.settings.get('linkHomey');
+    let bridgeFolder = null;
     for (const { flow, kind } of all) {
       if (skipExisting && ctx.dstFlowNames.has(M.norm(flow.name))) {
         results.push({ type: kind, name: flow.name, ok: true, skipped: true });
         continue;
       }
       try {
-        const folder = await this.ensureFolder(flow.folder, ctx, folders);
         const enabled = keepEnabled ? flow.enabled !== false : false;
-        const body = M.flowBody(flow, kind, ctx.idMap, folder, enabled);
+        const analysis = M.analyseFlow(flow, kind, ctx);
+        const useBridge = bridge && analysis.bridge;
+        // Flows started by a bridge get their own folder here, so it's clear they are linked to the other Homey
+        const folder = useBridge ? await this.ensureNamedFolder(target, this.homey.__('bridgeFolderHere'), ctx) : await this.ensureFolder(flow.folder, ctx, folders);
+        if (useBridge && !linkHomey) {
+          const lt = await this.linkTargets();
+          if (lt.targets.length === 1) { linkHomey = lt.targets[0]; this.homey.settings.set('linkHomey', linkHomey); }
+        }
+        if (useBridge && !linkHomey) throw new Error(this.homey.__('errors.noLinkHomey'));
+        const body = useBridge
+          ? M.bridgedBody(flow, kind, analysis.bridge, ctx.idMap, folder, enabled)
+          : M.flowBody(flow, kind, ctx.idMap, folder, enabled);
         const created = kind === 'advanced'
-          ? await (await this.targetApi()).flow.createAdvancedFlow({ advancedflow: body })
-          : await (await this.targetApi()).flow.createFlow({ flow: body });
+          ? await target.flow.createAdvancedFlow({ advancedflow: body })
+          : await target.flow.createFlow({ flow: body });
         ctx.idMap[String(flow.id).toLowerCase()] = created.id;
-        createdFlows.push({ flow, kind, created, folder, enabled });
-        results.push({ type: kind, name: flow.name, ok: true, id: created.id });
+        createdFlows.push({ flow, kind, created, folder, enabled, bridged: !!useBridge, analysis });
+        const move = { kind, name: flow.name, dstId: created.id, bridgeId: null };
+        if (useBridge) {
+          // On the other Homey: original trigger → start this flow via Homey Link (same enabled state)
+          const src = await this.getSource();
+          if (!bridgeFolder) bridgeFolder = await this.bridgeFolder(src);
+          const b = await src.flow.createFlow({ flow: M.bridgeFlowBody(flow, analysis.bridge, linkHomey, { id: created.id, kind }, bridgeFolder, enabled, this.homey.__('bridgePrefix')) });
+          move.bridgeId = b.id;
+        }
+        moves[String(flow.id).toLowerCase()] = move;
+        results.push({ type: kind, name: flow.name, ok: true, id: created.id, bridged: !!useBridge });
       } catch (err) {
         results.push({ type: kind, name: flow.name, ok: false, error: err.message });
       }
     }
 
+    this.homey.settings.set('moves', moves);
+
     // Second pass: "start flow" cards that point to flows created in this run
     const createdIds = new Set(createdFlows.map((x) => String(x.flow.id).toLowerCase()));
-    for (const { flow, kind, created, folder, enabled } of createdFlows) {
+    for (const { flow, kind, created, folder, enabled, bridged, analysis } of createdFlows) {
       const refs = [...M.collectUuids(kind === 'advanced' ? flow.cards : [flow.trigger, flow.conditions, flow.actions])]
         .filter((u) => createdIds.has(u) && u !== String(flow.id).toLowerCase());
       if (!refs.length) continue;
       try {
-        const body = M.flowBody(flow, kind, ctx.idMap, folder, enabled);
-        if (kind === 'advanced') await (await this.targetApi()).flow.updateAdvancedFlow({ id: created.id, advancedflow: body });
-        else await (await this.targetApi()).flow.updateFlow({ id: created.id, flow: body });
+        const body = bridged
+          ? M.bridgedBody(flow, kind, analysis.bridge, ctx.idMap, folder, enabled)
+          : M.flowBody(flow, kind, ctx.idMap, folder, enabled);
+        if (kind === 'advanced') await target.flow.updateAdvancedFlow({ id: created.id, advancedflow: body });
+        else await target.flow.updateFlow({ id: created.id, flow: body });
       } catch (err) {
         results.push({ type: kind, name: flow.name, ok: false, error: `${this.homey.__('errors.flowRefs')}: ${err.message}` });
       }
