@@ -37,8 +37,8 @@ Install the app on the Homey that should **receive** the flows (e.g. the Self-Ho
 ## Install
 
 ```bash
-git clone https://github.com/lucje-81/Homey_flow_mover.git
-cd Homey_flow_mover
+git clone https://github.com/lucje-81/homey_flow_mover.git
+cd homey_flow_mover
 npm install
 homey app install
 ```
