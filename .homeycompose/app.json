@@ -1,0 +1,73 @@
+{
+  "id": "flow.mover",
+  "version": "1.0.0",
+  "compatibility": ">=12.3.0",
+  "sdk": 3,
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "Flow Mover",
+    "nl": "Flow-verhuizer"
+  },
+  "description": {
+    "en": "Copy your flows from another Homey (e.g. a Homey Pro) to this Homey, with devices and variables matched automatically",
+    "nl": "Kopieer je flows van een andere Homey (bv. een Homey Pro) naar deze Homey, met automatisch gekoppelde toestellen en variabelen"
+  },
+  "category": [
+    "tools"
+  ],
+  "tags": {
+    "en": [
+      "flow",
+      "migration",
+      "copy",
+      "self-hosted"
+    ],
+    "nl": [
+      "flow",
+      "verhuizen",
+      "kopiëren",
+      "self-hosted"
+    ]
+  },
+  "permissions": [
+    "homey:manager:api"
+  ],
+  "brandColor": "#2f6fde",
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Luc Van Laer",
+    "email": "luc.van_laer@yahoo.com"
+  },
+  "api": {
+    "getStatus": {
+      "method": "GET",
+      "path": "/status"
+    },
+    "connect": {
+      "method": "POST",
+      "path": "/connect"
+    },
+    "getAnalysis": {
+      "method": "GET",
+      "path": "/analysis"
+    },
+    "setDeviceMap": {
+      "method": "POST",
+      "path": "/device-map"
+    },
+    "resetDeviceMap": {
+      "method": "POST",
+      "path": "/device-map/reset"
+    },
+    "migrate": {
+      "method": "POST",
+      "path": "/migrate"
+    }
+  }
+}

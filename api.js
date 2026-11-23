@@ -1,0 +1,27 @@
+'use strict';
+
+module.exports = {
+  async getStatus({ homey }) {
+    return homey.app.status();
+  },
+
+  async connect({ homey, body }) {
+    return homey.app.connect(body || {});
+  },
+
+  async getAnalysis({ homey }) {
+    return homey.app.analyse();
+  },
+
+  async setDeviceMap({ homey, body }) {
+    return homey.app.setDeviceMap(body || {});
+  },
+
+  async resetDeviceMap({ homey }) {
+    return homey.app.resetDeviceMap();
+  },
+
+  async migrate({ homey, body }) {
+    return homey.app.migrate(body || {});
+  },
+};

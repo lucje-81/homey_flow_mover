@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; color: #222; margin: 0; padding: 12px; }
+    h1 { font-size: 19px; margin: 0 0 4px; }
+    h2 { font-size: 16px; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+    h2 .n { flex: none; width: 22px; height: 22px; border-radius: 50%; background: #2f6fde; color: #fff; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+    .hint { color: #666; margin: 0 0 10px; line-height: 1.4; font-size: 13px; }
+    .card { border: 1px solid #e5e5e5; border-radius: 12px; padding: 12px; margin: 12px 0; }
+    .card.off { opacity: .45; pointer-events: none; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+    input, select, button { font-size: 14px; padding: 7px 9px; border: 1px solid #ccc; border-radius: 7px; background: #fff; color: #222; box-sizing: border-box; }
+    input[type=checkbox] { width: auto; padding: 0; margin: 0; }
+    button { cursor: pointer; }
+    button.primary { background: #2f6fde; border-color: #2f6fde; color: #fff; font-weight: 600; }
+    button.small { padding: 4px 9px; font-size: 13px; }
+    button[disabled] { opacity: .5; cursor: default; }
+    label.chk { display: flex; align-items: center; gap: 7px; font-size: 13px; margin: 5px 0; }
+    .status { font-size: 13px; min-height: 18px; }
+    .ok { color: #1d6b36; } .err { color: #b00020; } .warn { color: #8a5a00; }
+    details.help { font-size: 13px; color: #555; margin: 6px 0 10px; }
+    details.help summary { cursor: pointer; color: #2f6fde; }
+    details.help ol { margin: 6px 0 0 18px; padding: 0; line-height: 1.5; }
+    .dev { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 7px 0; border-bottom: 1px solid #f0f0f0; }
+    .dev .nm { flex: 1 1 160px; min-width: 0; }
+    .dev .nm b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dev .nm small { color: #888; }
+    .dev select { flex: 1 1 180px; min-width: 0; max-width: 100%; }
+    .dev.missing select { border-color: #e3a3ad; background: #fff5f6; }
+    .flow { border-bottom: 1px solid #f0f0f0; padding: 7px 0; }
+    .flow .top { display: flex; align-items: center; gap: 8px; }
+    .flow .ic { flex: none; width: 20px; height: 20px; border-radius: 50%; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .ic.g { background: #2f9e44; } .ic.o { background: #e0861d; } .ic.r { background: #d63939; } .ic.s { background: #999; }
+    .flow .nm { flex: 1; min-width: 0; }
+    .flow .nm b { font-weight: 600; }
+    .flow .nm small { display: block; color: #888; font-size: 12px; }
+    .tag { font-size: 11px; padding: 1px 6px; border-radius: 8px; background: #eef2fb; color: #2f6fde; margin-left: 4px; white-space: nowrap; }
+    .tag.grey { background: #eee; color: #666; }
+    .flow ul { margin: 4px 0 0 56px; padding: 0; font-size: 12px; line-height: 1.45; }
+    .flow li.e { color: #b00020; } .flow li.w { color: #8a5a00; }
+    .bar { position: sticky; bottom: 0; background: #fff; padding: 10px 0 4px; border-top: 1px solid #eee; }
+    .result li { font-size: 13px; }
+    .empty { padding: 14px; text-align: center; color: #777; border: 1px dashed #ccc; border-radius: 8px; font-size: 13px; }
+    .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+    .filters button.sel { background: #2f6fde; border-color: #2f6fde; color: #fff; }
+  </style>
+</head>
+<body>
+  <h1 data-t="title"></h1>
+  <p class="hint" data-t="intro"></p>
+
+  <div class="card" id="step1">
+    <h2><span class="n">1</span><span data-t="step1"></span></h2>
+    <p class="hint" data-t="step1Hint"></p>
+    <details class="help"><summary data-t="keyHelp"></summary><ol id="keySteps"></ol></details>
+    <div class="row">
+      <input id="address" type="text" style="flex:1 1 160px" autocomplete="off">
+      <input id="token" type="password" style="flex:2 1 200px" autocomplete="off">
+      <button id="connect" class="primary" data-t="connect"></button>
+    </div>
+    <div class="status" id="connStatus"></div>
+  </div>
+
+  <div class="card off" id="step2">
+    <h2><span class="n">2</span><span data-t="step2"></span></h2>
+    <p class="hint" data-t="step2Hint"></p>
+    <div class="row">
+      <label class="chk"><input id="onlyMissing" type="checkbox"> <span data-t="onlyMissing"></span></label>
+      <button id="resetMap" class="small" data-t="resetMap" style="margin-left:auto"></button>
+    </div>
+    <div id="devList"></div>
+  </div>
+
+  <div class="card off" id="step3">
+    <h2><span class="n">3</span><span data-t="step3"></span></h2>
+    <p class="hint" data-t="step3Hint"></p>
+    <div class="row"><input id="search" type="search" style="flex:1"></div>
+    <div class="filters" id="filters"></div>
+    <div class="row">
+      <button id="selectReady" class="small" data-t="selectReady"></button>
+      <button id="selectNone" class="small" data-t="selectNone"></button>
+    </div>
+    <div id="flowList"></div>
+    <div class="bar">
+      <label class="chk"><input id="optEnabled" type="checkbox"> <span data-t="optEnabled"></span></label>
+      <label class="chk"><input id="optVars" type="checkbox" checked> <span data-t="optVars"></span></label>
+      <label class="chk"><input id="optSkip" type="checkbox" checked> <span data-t="optSkip"></span></label>
+      <div class="row" style="margin-top:8px"><button id="migrate" class="primary" disabled></button><span class="status" id="migStatus"></span></div>
+    </div>
+    <ul class="result" id="result"></ul>
+  </div>
+
+  <script type="text/javascript">
+    var H;
+    var data = null;
+    var selected = {};
+    var filter = 'all';
+    var $ = function (id) { return document.getElementById(id); };
+    function t(k, v) {
+      var s = H.__('settings.' + k);
+      if (v) Object.keys(v).forEach(function (n) { s = s.replace('{' + n + '}', v[n]); });
+      return s;
+    }
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    function api(method, path, body) {
+      return new Promise(function (resolve, reject) {
+        H.api(method, path, body || null, function (err, res) { if (err) reject(err); else resolve(res); });
+      });
+    }
+
+    function statusOf(f) {
+      if (f.exists) return 's';
+      if (f.issues.length) return 'r';
+      if (f.notes.length) return 'o';
+      return 'g';
+    }
+
+    // ---- step 1
+    function connect() {
+      $('connect').disabled = true;
+      $('connStatus').className = 'status';
+      $('connStatus').textContent = t('connecting');
+      api('POST', '/connect', { address: $('address').value, token: $('token').value })
+        .then(function (r) {
+          $('token').value = '';
+          $('token').placeholder = t('tokenSaved');
+          $('connStatus').className = 'status ok';
+          $('connStatus').textContent = t('connected', { flows: r.flows + r.advancedFlows, devices: r.devices });
+          return analyse();
+        })
+        .catch(function (err) {
+          $('connStatus').className = 'status err';
+          $('connStatus').textContent = t('connectFailed') + ' ' + (err.message || err);
+        })
+        .then(function () { $('connect').disabled = false; });
+    }
+
+    function analyse() {
+      $('flowList').innerHTML = '<div class="empty">' + esc(t('analysing')) + '</div>';
+      return api('GET', '/analysis').then(function (r) {
+        data = r;
+        $('step2').classList.remove('off');
+        $('step3').classList.remove('off');
+        var keep = {};
+        data.flows.forEach(function (f) { if (selected[f.id]) keep[f.id] = true; });
+        selected = keep;
+        renderDevices();
+        renderFlows();
+      }).catch(function (err) {
+        $('flowList').innerHTML = '<div class="empty err">' + esc(err.message || err) + '</div>';
+      });
+    }
+
+    // ---- step 2
+    function renderDevices() {
+      var only = $('onlyMissing').checked;
+      var list = data.devices.filter(function (d) { return !only || !d.target; });
+      if (!data.devices.length) { $('devList').innerHTML = '<div class="empty">' + esc(t('noDevices')) + '</div>'; return; }
+      if (!list.length) { $('devList').innerHTML = '<div class="empty ok">' + esc(t('allMatched')) + '</div>'; return; }
+      var opts = data.targets.map(function (x) { return [x.id, x.name + (x.zone ? ' (' + x.zone + ')' : '')]; });
+      $('devList').innerHTML = list.map(function (d) {
+        return '<div class="dev' + (d.target ? '' : ' missing') + '"><span class="nm"><b>' + esc(d.name) + '</b><small>'
+          + esc([d.zone, d.app, t('usedIn', { n: d.flows })].filter(Boolean).join(' · ')) + '</small>'
+          + (d.otherApp ? '<small class="warn">' + esc(t('otherApp')) + '</small>' : '') + '</span>'
+          + '<select data-src="' + esc(d.id) + '"><option value="">' + esc(t('noTarget')) + '</option>'
+          + opts.map(function (o) { return '<option value="' + esc(o[0]) + '"' + (o[0] === d.target ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('')
+          + '</select></div>';
+      }).join('');
+    }
+
+    // ---- step 3
+    function issueText(i) {
+      return t('issue_' + i.kind, { name: i.name });
+    }
+    function renderFilters() {
+      var counts = { all: data.flows.length, g: 0, o: 0, r: 0, s: 0 };
+      data.flows.forEach(function (f) { counts[statusOf(f)]++; });
+      $('filters').innerHTML = ['all', 'g', 'o', 'r', 's'].map(function (k) {
+        return '<button class="small' + (filter === k ? ' sel' : '') + '" data-f="' + k + '">' + esc(t('filter_' + k)) + ' (' + counts[k] + ')</button>';
+      }).join('');
+    }
+    function renderFlows() {
+      renderFilters();
+      var q = $('search').value.trim().toLowerCase();
+      var list = data.flows.filter(function (f) {
+        return (filter === 'all' || statusOf(f) === filter) && (!q || (f.name + ' ' + f.folderPath).toLowerCase().indexOf(q) >= 0);
+      });
+      if (!list.length) $('flowList').innerHTML = '<div class="empty">' + esc(t('noFlows')) + '</div>';
+      else {
+        $('flowList').innerHTML = list.map(function (f) {
+          var st = statusOf(f);
+          var lines = (f.exists ? ['<li>' + esc(t('exists')) + '</li>'] : [])
+            .concat(f.issues.map(function (i) { return '<li class="e">' + esc(issueText(i)) + '</li>'; }))
+            .concat(f.notes.map(function (i) { return '<li class="w">' + esc(issueText(i)) + '</li>'; }));
+          return '<div class="flow"><div class="top"><input type="checkbox" data-flow="' + esc(f.id) + '"' + (selected[f.id] ? ' checked' : '') + '>'
+            + '<span class="ic ' + st + '">' + { g: '✓', o: '!', r: '✕', s: '=' }[st] + '</span>'
+            + '<span class="nm"><b>' + esc(f.name) + '</b>' + (f.kind === 'advanced' ? '<span class="tag">' + esc(t('advanced')) + '</span>' : '')
+            + (f.enabled ? '' : '<span class="tag grey">' + esc(t('disabled')) + '</span>')
+            + '<small>' + esc(f.folderPath || t('noFolder')) + '</small></span></div>'
+            + (lines.length ? '<ul>' + lines.join('') + '</ul>' : '') + '</div>';
+        }).join('');
+      }
+      updateButton();
+    }
+    function updateButton() {
+      var n = Object.keys(selected).length;
+      $('migrate').disabled = !n;
+      $('migrate').textContent = t('migrate', { n: n });
+    }
+
+    function migrate() {
+      var ids = Object.keys(selected);
+      var bad = data.flows.filter(function (f) { return selected[f.id] && f.issues.length; }).length;
+      var msg = t('confirm', { n: ids.length }) + (bad ? '\n\n' + t('confirmBad', { n: bad }) : '') + ($('optEnabled').checked ? '\n\n' + t('confirmEnabled') : '');
+      H.confirm(msg, 'warning', function (err, yes) {
+        if (err || !yes) return;
+        $('migrate').disabled = true;
+        $('migStatus').className = 'status';
+        $('migStatus').textContent = t('migrating');
+        api('POST', '/migrate', { ids: ids, keepEnabled: $('optEnabled').checked, createVariables: $('optVars').checked, skipExisting: $('optSkip').checked })
+          .then(function (res) {
+            var ok = res.filter(function (r) { return r.ok && !r.skipped && r.type !== 'variable'; }).length;
+            var failed = res.filter(function (r) { return !r.ok; }).length;
+            $('migStatus').className = 'status ' + (failed ? 'warn' : 'ok');
+            $('migStatus').textContent = t('done', { ok: ok, failed: failed });
+            $('result').innerHTML = res.map(function (r) {
+              var what = r.type === 'variable' ? t('variable') : r.type === 'advanced' ? t('advanced') : t('flow');
+              return '<li class="' + (r.ok ? (r.skipped ? '' : 'ok') : 'err') + '">' + esc(what + ': ' + r.name) + ' — '
+                + esc(r.ok ? (r.skipped ? t('skipped') : t('created')) : r.error) + '</li>';
+            }).join('');
+            selected = {};
+            return analyse();
+          })
+          .catch(function (e) {
+            $('migStatus').className = 'status err';
+            $('migStatus').textContent = e.message || String(e);
+          })
+          .then(updateButton);
+      });
+    }
+
+    function onHomeyReady(Homey) {
+      H = Homey;
+      document.querySelectorAll('[data-t]').forEach(function (el) { el.textContent = t(el.getAttribute('data-t')); });
+      $('address').placeholder = t('address');
+      $('token').placeholder = t('token');
+      $('search').placeholder = t('search');
+      $('keySteps').innerHTML = [1, 2, 3, 4].map(function (i) { return '<li>' + esc(t('key' + i)) + '</li>'; }).join('');
+      $('connect').addEventListener('click', connect);
+      $('onlyMissing').addEventListener('change', renderDevices);
+      $('search').addEventListener('input', renderFlows);
+      $('migrate').addEventListener('click', migrate);
+      $('resetMap').addEventListener('click', function () { api('POST', '/device-map/reset').then(analyse); });
+      $('devList').addEventListener('change', function (e) {
+        var src = e.target.getAttribute('data-src');
+        if (!src) return;
+        api('POST', '/device-map', { srcId: src, dstId: e.target.value }).then(analyse);
+      });
+      $('filters').addEventListener('click', function (e) {
+        var b = e.target.closest('[data-f]');
+        if (b) { filter = b.getAttribute('data-f'); renderFlows(); }
+      });
+      $('flowList').addEventListener('change', function (e) {
+        var id = e.target.getAttribute('data-flow');
+        if (!id) return;
+        if (e.target.checked) selected[id] = true; else delete selected[id];
+        updateButton();
+      });
+      $('selectReady').addEventListener('click', function () {
+        data.flows.forEach(function (f) { if (statusOf(f) === 'g' || statusOf(f) === 'o') selected[f.id] = true; });
+        renderFlows();
+      });
+      $('selectNone').addEventListener('click', function () { selected = {}; renderFlows(); });
+      updateButton();
+      api('GET', '/status').then(function (s) {
+        $('address').value = s.address || '';
+        if (s.hasToken) $('token').placeholder = t('tokenSaved');
+        Homey.ready();
+        if (s.address && s.hasToken) {
+          $('connStatus').textContent = t('connecting');
+          analyse().then(function () {
+            if (data) { $('connStatus').className = 'status ok'; $('connStatus').textContent = t('connectedShort'); }
+            else $('connStatus').textContent = '';
+          });
+        }
+      }).catch(function () { Homey.ready(); });
+    }
+  </script>
+</body>
+</html>
