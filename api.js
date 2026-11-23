@@ -53,6 +53,10 @@ module.exports = {
     return homey.app.createGroups(body || {});
   },
 
+  async inviteUsers({ homey, body }) {
+    return homey.app.inviteUsers(body || {});
+  },
+
   async refresh({ homey }) {
     return homey.app.refresh();
   },

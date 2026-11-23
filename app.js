@@ -140,7 +140,7 @@ class FlowMoverApp extends Homey.App {
       zones: byId(zones, (z) => ({ id: z.id, name: z.name, parent: z.parent || null, icon: z.icon || 'default' })),
       folders: byId(folders, (f) => ({ id: f.id, name: f.name, parent: f.parent || null })),
       variables: byId(variables, (v) => ({ id: v.id, name: v.name, type: v.type, value: v.value })),
-      users: byId(users, (u) => ({ id: u.id, name: u.name })),
+      users: byId(users, (u) => ({ id: u.id, name: u.name, role: u.role, athomId: u.athomId || null, inviteUrl: u.inviteUrl || null, enabled: u.enabled !== false })),
       flows: Object.values(flows).map((f) => M.normaliseFlow(M.plain(f), 'flow')),
       advanced: Object.values(advanced).map((f) => M.normaliseFlow(M.plain(f), 'advanced')),
       apps: apps ? new Set(Object.keys(apps)) : null,
@@ -163,7 +163,7 @@ class FlowMoverApp extends Homey.App {
     const deviceMatch = M.matchDevices(Object.values(src.devices), Object.values(dst.devices), src.zones, dst.zones, overrides);
     const varMap = M.matchByName(Object.values(src.variables), Object.values(dst.variables), true);
     const zoneMap = M.matchZones(src.zones, dst.zones);
-    const userMap = M.matchByName(Object.values(src.users), Object.values(dst.users));
+    const userMap = this.matchUsers(src.users, dst.users);
     const dstFlowNames = new Set([...dst.flows, ...dst.advanced].map((f) => M.norm(f.name)));
     // Source flows that already exist on the target (same name and kind) → for "start flow" cards
     const flowNameMap = {};
@@ -180,6 +180,66 @@ class FlowMoverApp extends Homey.App {
       src, dst, deviceMatch, varMap, zoneMap, userMap, flowNameMap, idMap, dstFlowNames,
       dstCards: dst.cards, dstApps: dst.apps, selectedIds: new Set(selected.map((s) => String(s).toLowerCase())),
     };
+  }
+
+  /** Users: the owner matches the owner, others by their Homey account (athomId), else by name. */
+  matchUsers(srcUsers, dstUsers) {
+    const out = {};
+    const dst = Object.values(dstUsers);
+    for (const u of Object.values(srcUsers)) {
+      const key = String(u.id).toLowerCase();
+      let t = u.role === 'owner' ? dst.find((d) => d.role === 'owner') : null;
+      if (!t && u.athomId) t = dst.find((d) => d.athomId && d.athomId === u.athomId);
+      if (!t) t = dst.find((d) => d.name && M.norm(d.name) === M.norm(u.name));
+      if (t) out[key] = t.id;
+    }
+    return out;
+  }
+
+  /** Users of the other Homey: already here, invited (link pending) or still to invite. */
+  analyseUsers(ctx) {
+    const invites = this.homey.settings.get('invites') || {};
+    const usage = {};
+    for (const [kind, list] of [['flow', ctx.src.flows], ['advanced', ctx.src.advanced]]) {
+      for (const f of list) {
+        M.collectUuids(kind === 'advanced' ? f.cards : [f.trigger, f.conditions, f.actions]).forEach((u) => { if (ctx.src.users[u]) usage[u] = (usage[u] || 0) + 1; });
+      }
+    }
+    return Object.values(ctx.src.users).map((u) => {
+      const key = String(u.id).toLowerCase();
+      const here = ctx.userMap[key];
+      const inv = invites[key];
+      const pending = inv && ctx.dst.users[String(inv.id).toLowerCase()] && !ctx.dst.users[String(inv.id).toLowerCase()].athomId;
+      return {
+        id: key, name: u.name, role: u.role, flows: usage[key] || 0,
+        status: here ? 'here' : pending ? 'invited' : 'missing',
+        inviteUrl: pending ? (ctx.dst.users[String(inv.id).toLowerCase()].inviteUrl || inv.url) : null,
+      };
+    }).sort((a, b) => (a.role === 'owner' ? -1 : 0) - (b.role === 'owner' ? -1 : 0) || a.name.localeCompare(b.name));
+  }
+
+  /** Create an invitation with the same role for each chosen user; returns the invite links. */
+  async inviteUsers({ ids }) {
+    this.cache = {};
+    const ctx = await this.context();
+    const target = await this.targetApi();
+    const invites = { ...(this.homey.settings.get('invites') || {}) };
+    const results = [];
+    for (const raw of ids || []) {
+      const key = String(raw).toLowerCase();
+      const u = ctx.src.users[key];
+      if (!u || u.role === 'owner' || ctx.userMap[key]) continue;
+      try {
+        const created = await target.users.createUser({ user: { role: u.role || 'user' } });
+        invites[key] = { id: created.id, url: created.inviteUrl || null };
+        results.push({ type: 'user', name: u.name, ok: true, url: created.inviteUrl || null });
+      } catch (err) {
+        results.push({ type: 'user', name: u.name, ok: false, error: err.message });
+      }
+    }
+    this.homey.settings.set('invites', invites);
+    this.cache = {};
+    return results;
   }
 
   /** Analysis for the settings page: flows with their problems, and the devices they use. */
@@ -210,6 +270,7 @@ class FlowMoverApp extends Homey.App {
       dashboards: this.analyseDashboards(ctx),
       appVersions: this.appVersions(ctx),
       systemDevices: this.systemDevices(ctx),
+      users: this.analyseUsers(ctx),
       widgetApp: ctx.dstApps ? ctx.dstApps.has(WIDGET_APP) && !!(ctx.src.apps && ctx.src.apps.has(WIDGET_APP)) : false,
     };
   }

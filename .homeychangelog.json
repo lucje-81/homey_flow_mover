@@ -1,4 +1,8 @@
 {
+  "1.11.0": {
+    "en": "Users: invite the users of the other Homey with the same role; users are matched by their Homey account",
+    "nl": "Gebruikers: de gebruikers van de andere Homey uitnodigen met dezelfde rol; gebruikers worden herkend aan hun Homey-account"
+  },
   "1.10.0": {
     "en": "Complete list of missing apps: also apps used in dashboards, apps whose devices are here via Homey Link and (optionally) unused apps",
     "nl": "Volledige lijst met ontbrekende apps: ook apps in dashboards, apps waarvan de toestellen hier via Homey Link staan en (optioneel) ongebruikte apps"

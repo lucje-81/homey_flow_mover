@@ -90,6 +90,8 @@
     <div id="systemList"></div>
     <h3 data-t="versionsTitle"></h3>
     <div id="versionList"></div>
+    <h3 data-t="usersTitle"></h3>
+    <div id="userList"></div>
     <h3 data-t="varsTitle"></h3>
     <div id="varList"></div>
   </div>
@@ -271,6 +273,19 @@
         vhtml += '<div class="hint" style="margin-top:6px">' + esc(t('versionsNewer')) + ' ' + newer.map(function (v) { return esc(v.name + ' ' + v.here + ' (' + v.there + ')'); }).join(' · ') + '</div>';
       }
       $('versionList').innerHTML = vhtml;
+      var users = data.users || [];
+      var others = users.filter(function (u) { return u.role !== 'owner'; });
+      $('userList').innerHTML = !others.length ? '<div class="empty">' + esc(t('noUsers')) + '</div>' : others.map(function (u) {
+        var info = [t('role_' + u.role) !== 'settings.role_' + u.role && t('role_' + u.role) !== 'role_' + u.role ? t('role_' + u.role) : u.role];
+        if (u.flows) info.push(t('usedIn', { n: u.flows }));
+        var right;
+        if (u.status === 'here') right = '<small class="act ok">' + esc(t('userHere')) + '</small>';
+        else if (u.status === 'invited') right = '<small class="act warn" style="flex-basis:100%">' + esc(t('userInvited')) + '</small>'
+          + (u.inviteUrl ? '<div class="row" style="flex-basis:100%;margin:2px 0 0"><input readonly value="' + esc(u.inviteUrl) + '" style="flex:1;font-size:12px"><button class="small" data-copy="' + esc(u.inviteUrl) + '">' + esc(t('copy')) + '</button></div>' : '');
+        else right = '<input type="checkbox" class="act" data-user="' + esc(u.id) + '" checked>';
+        return '<div class="miss"><span class="nm"><b>' + esc(u.name) + '</b><small>' + esc(info.join(' · ')) + '</small></span>' + right + '</div>';
+      }).join('') + (others.some(function (u) { return u.status === 'missing'; })
+        ? '<div class="row" style="margin-top:8px"><button id="inviteUsers" class="small primary">' + esc(t('inviteUsers')) + '</button><span class="status" id="userStatus"></span></div>' : '');
       var vars = data.missingVariables || [];
       $('varList').innerHTML = !vars.length ? '<div class="empty ok">' + esc(t('noMissingVars')) + '</div>' : vars.map(function (v) {
         return '<label class="miss"><input type="checkbox" data-var="' + esc(v.id) + '"' + (v.flows ? ' checked' : '') + '><span class="nm"><b>' + esc(v.name) + '</b><small>'
@@ -506,6 +521,26 @@
           });
       }
       $('versionList').addEventListener('click', openStore);
+      $('userList').addEventListener('click', function (e) {
+        var c = e.target.closest('[data-copy]');
+        if (c) {
+          var url = c.getAttribute('data-copy');
+          var done = function () { c.textContent = t('copied'); setTimeout(function () { c.textContent = t('copy'); }, 1500); };
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { c.previousSibling.select(); });
+          else { c.previousSibling.select(); try { document.execCommand('copy'); done(); } catch (er) { /* select only */ } }
+          return;
+        }
+        if (e.target.id !== 'inviteUsers') return;
+        var ids = [].slice.call(document.querySelectorAll('[data-user]:checked')).map(function (x) { return x.getAttribute('data-user'); });
+        if (!ids.length) return;
+        e.target.disabled = true;
+        $('userStatus').textContent = t('creating');
+        api('POST', '/invite', { ids: ids }).then(function (res) {
+          var bad = res.filter(function (r) { return !r.ok; });
+          if (bad.length) H.alert(bad.map(function (r) { return r.name + ': ' + r.error; }).join('\n'));
+          return analyse();
+        }).catch(function (er) { H.alert(er.message || String(er)); e.target.disabled = false; });
+      });
       $('appList').addEventListener('change', function (e) { if (e.target.id === 'appsAll') renderMissing(); });
       $('systemList').addEventListener('click', function (e) {
         if (e.target.id !== 'createGroups') return;

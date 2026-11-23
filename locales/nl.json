@@ -158,7 +158,18 @@
     "appLinked": "{n} al hier via o.a. Homey Link",
     "appUnused": "niet gebruikt in flows of dashboards",
     "appAllLinked": "Alle toestellen staan hier al via Homey Link: installeer de app alleen als je de toestellen rechtstreeks op deze Homey wilt.",
-    "appsShowAll": "Ook apps tonen die niet in flows of dashboards gebruikt worden ({n})"
+    "appsShowAll": "Ook apps tonen die niet in flows of dashboards gebruikt worden ({n})",
+    "usersTitle": "Gebruikers",
+    "noUsers": "Geen andere gebruikers op de andere Homey.",
+    "role_manager": "Beheerder",
+    "role_user": "Gebruiker",
+    "role_guest": "Gast",
+    "role_owner": "Eigenaar",
+    "userHere": "staat al op deze Homey",
+    "userInvited": "Uitgenodigd: bezorg deze link aan die persoon. Na het aanvaarden (aanmelden met zijn eigen Homey-account) wordt hij herkend en kloppen flows met die gebruiker.",
+    "copy": "Kopiëren",
+    "copied": "Gekopieerd",
+    "inviteUsers": "Uitnodigingen maken voor de aangevinkte gebruikers"
   },
   "copy": "kopie"
 }

@@ -158,7 +158,18 @@
     "appLinked": "{n} already here via e.g. Homey Link",
     "appUnused": "not used in flows or dashboards",
     "appAllLinked": "All devices are already here through Homey Link: only install the app if you want the devices directly on this Homey.",
-    "appsShowAll": "Also show apps not used in flows or dashboards ({n})"
+    "appsShowAll": "Also show apps not used in flows or dashboards ({n})",
+    "usersTitle": "Users",
+    "noUsers": "No other users on the other Homey.",
+    "role_manager": "Manager",
+    "role_user": "User",
+    "role_guest": "Guest",
+    "role_owner": "Owner",
+    "userHere": "already on this Homey",
+    "userInvited": "Invited: send this link to that person. After accepting (signing in with their own Homey account) they are recognised and flows with that user are right.",
+    "copy": "Copy",
+    "copied": "Copied",
+    "inviteUsers": "Create invitations for the ticked users"
   },
   "copy": "copy"
 }
