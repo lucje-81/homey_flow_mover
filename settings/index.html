@@ -77,6 +77,8 @@
     <p class="hint" data-t="stepMissingHint"></p>
     <h3 data-t="appsTitle"></h3>
     <div id="appList"></div>
+    <h3 data-t="versionsTitle"></h3>
+    <div id="versionList"></div>
     <h3 data-t="varsTitle"></h3>
     <div id="varList"></div>
   </div>
@@ -212,6 +214,19 @@
         }
         return '<div class="miss"><span class="nm"><b>' + esc(a.name) + '</b><small>' + esc(a.id + (a.channel === 'test' ? ' · test' : '') + ' · ' + where.join(' · ')) + '</small></span>' + act + '</div>';
       }).join('');
+      var vers = data.appVersions || [];
+      var older = vers.filter(function (v) { return v.older; });
+      var newer = vers.filter(function (v) { return !v.older; });
+      var vhtml = !older.length ? '<div class="empty ok">' + esc(t('versionsOk')) + '</div>' : older.map(function (v) {
+        var act = v.origin === 'appstore'
+          ? '<button class="small primary act" data-install="' + esc(v.id) + '" data-channel="' + esc(v.channel) + '">' + esc(t('update')) + '</button>'
+          : '<small class="act warn" style="flex-basis:100%">' + esc(t('cliUpdate')) + ' <code>git pull</code> + <code>homey app install</code></small>';
+        return '<div class="miss"><span class="nm"><b>' + esc(v.name) + '</b><small>' + esc(t('versionHere', { here: v.here, there: v.there }) + (v.flows ? ' · ' + t('usedIn', { n: v.flows }) : '')) + '</small></span>' + act + '</div>';
+      }).join('');
+      if (newer.length) {
+        vhtml += '<div class="hint" style="margin-top:6px">' + esc(t('versionsNewer')) + ' ' + newer.map(function (v) { return esc(v.name + ' ' + v.here + ' (' + v.there + ')'); }).join(' · ') + '</div>';
+      }
+      $('versionList').innerHTML = vhtml;
       var vars = data.missingVariables || [];
       $('varList').innerHTML = !vars.length ? '<div class="empty ok">' + esc(t('noMissingVars')) + '</div>' : vars.map(function (v) {
         return '<label class="miss"><input type="checkbox" data-var="' + esc(v.id) + '"' + (v.flows ? ' checked' : '') + '><span class="nm"><b>' + esc(v.name) + '</b><small>'
@@ -407,6 +422,15 @@
             return analyse().then(function () { $('zoneSummary').textContent = t('zonesDone', { zones: zones, devices: moved }); });
           }).catch(function (er) { H.alert(er.message || String(er)); e.target.disabled = false; });
         });
+      });
+      $('versionList').addEventListener('click', function (e) {
+        var b = e.target.closest('[data-install]');
+        if (!b) return;
+        b.disabled = true;
+        b.textContent = t('updating');
+        api('POST', '/install-app', { id: b.getAttribute('data-install'), channel: b.getAttribute('data-channel') })
+          .then(analyse)
+          .catch(function (err) { b.disabled = false; b.textContent = t('update'); H.alert(t('installFailed') + ' ' + (err.message || err)); });
       });
       $('appList').addEventListener('click', function (e) {
         var b = e.target.closest('[data-install]');

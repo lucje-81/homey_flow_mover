@@ -71,7 +71,7 @@
     "created": "aangemaakt",
     "skipped": "overgeslagen (bestaat al)",
     "stepMissing": "Wat ontbreekt er op deze Homey?",
-    "stepMissingHint": "De apps en variabelen van de andere Homey die je flows nodig hebben, maar die hier nog niet zijn. Installeer ze eerst, dan komen de flows volledig over. Na het installeren van een app voeg je de toestellen ervan nog zelf toe; daarna worden ze in stap 3 automatisch gekoppeld.",
+    "stepMissingHint": "De apps en variabelen van de andere Homey die je flows nodig hebben, maar die hier nog niet zijn, en apps die hier een oudere versie hebben (dan kunnen flowkaarten ontbreken). Installeer of werk ze eerst bij, dan komen de flows volledig over. Na het installeren van een app voeg je de toestellen ervan nog zelf toe; daarna worden ze in stap 3 automatisch gekoppeld.",
     "appsTitle": "Apps",
     "varsTitle": "Variabelen",
     "noMissingApps": "Alle apps die je flows gebruiken zijn op deze Homey geïnstalleerd.",
@@ -118,7 +118,14 @@
     "fav_favoriteDevices": "Favoriete toestellen",
     "fav_favoriteFlows": "Favoriete flows",
     "fav_favoriteMoods": "Favoriete moods",
-    "fav_favoriteDashboards": "Favoriete dashboards"
+    "fav_favoriteDashboards": "Favoriete dashboards",
+    "versionsTitle": "Versies",
+    "versionsOk": "Geen apps met een oudere versie dan op de andere Homey.",
+    "versionHere": "hier {here} · op de andere Homey {there}",
+    "update": "Bijwerken",
+    "updating": "Bijwerken…",
+    "cliUpdate": "Zelf geïnstalleerd: werk bij vanaf je pc in de map van de app met",
+    "versionsNewer": "Hier nieuwer dan op de andere Homey (geen probleem):"
   },
   "copy": "kopie"
 }

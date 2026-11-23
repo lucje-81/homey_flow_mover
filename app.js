@@ -160,6 +160,7 @@ class FlowMoverApp extends Homey.App {
       flows, devices, targets, cardsChecked: !!(ctx.dstCards && ctx.dstCards.size),
       missingApps: this.missingApps(ctx, flows), missingVariables: this.missingVariables(ctx), zones: this.zonePlan(ctx),
       dashboards: this.analyseDashboards(ctx),
+      appVersions: this.appVersions(ctx),
       widgetApp: ctx.dstApps ? ctx.dstApps.has(WIDGET_APP) && !!(ctx.src.apps && ctx.src.apps.has(WIDGET_APP)) : false,
     };
   }
@@ -386,6 +387,32 @@ class FlowMoverApp extends Homey.App {
         flows: u.flows.size, devices: u.devices.size,
       };
     }).sort((a, b) => b.flows - a.flows || a.name.localeCompare(b.name));
+  }
+
+  /** Apps installed on both Homeys with a different version (older here = flow cards may be missing). */
+  appVersions(ctx) {
+    if (!ctx.dstApps) return [];
+    const used = {};
+    for (const [kind, list] of [['flow', ctx.src.flows], ['advanced', ctx.src.advanced]]) {
+      for (const f of list) {
+        const body = kind === 'advanced' ? f.cards : [f.trigger, f.conditions, f.actions];
+        const apps = M.collectApps(body);
+        M.collectUuids(body).forEach((u) => { if (ctx.src.devices[u]) apps.add(M.deviceApp(ctx.src.devices[u])); });
+        apps.forEach((a) => { used[a] = (used[a] || 0) + 1; });
+      }
+    }
+    const out = [];
+    for (const [id, src] of Object.entries(ctx.src.appInfo)) {
+      const dst = ctx.dst.appInfo[id];
+      if (!dst || !src.version || !dst.version) continue;
+      const cmp = M.compareVersions(dst.version, src.version);
+      if (cmp === 0) continue;
+      out.push({
+        id, name: src.name || id, here: dst.version, there: src.version, older: cmp < 0,
+        origin: dst.origin || src.origin || null, channel: src.channel || 'live', flows: used[id] || 0,
+      });
+    }
+    return out.sort((a, b) => (b.older - a.older) || (b.flows - a.flows) || a.name.localeCompare(b.name));
   }
 
   /** Variables of the other Homey that don't exist here (same name and type). */

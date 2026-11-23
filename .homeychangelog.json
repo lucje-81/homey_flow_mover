@@ -1,4 +1,8 @@
 {
+  "1.5.0": {
+    "en": "App versions: shows apps that are older here than on the other Homey, with an update button for App Store apps",
+    "nl": "App-versies: toont apps die hier ouder zijn dan op de andere Homey, met een knop om App Store-apps bij te werken"
+  },
   "1.4.0": {
     "en": "Favorites: take over your favorite devices and flows",
     "nl": "Favorieten: je favoriete toestellen en flows overnemen"
