@@ -12,7 +12,7 @@ const WIDGET_SETTINGS = ['panels', 'icons', 'energyFields'];
 class FlowMoverApp extends Homey.App {
 
   async onInit() {
-    this.target = await HomeyAPI.createAppAPI({ homey: this.homey });
+    this.appApi = await HomeyAPI.createAppAPI({ homey: this.homey });
     this.cache = {};
     this.log('Flow Mover ready');
   }
@@ -39,6 +39,45 @@ class FlowMoverApp extends Homey.App {
     return this.source;
   }
 
+  /**
+   * API of this Homey for creating things. The app's own API may only read here ("Missing Scopes"
+   * when creating variables, flows, …), so a personal API key of this Homey is used when it is set.
+   */
+  async targetApi() {
+    const token = String(this.homey.settings.get('targetToken') || '').trim();
+    if (!token) return this.appApi;
+    if (!this.targetLocal || this.targetLocalToken !== token) {
+      // Address of this Homey: as reported by Homey, else localhost (inside a Docker container the reported one may not work)
+      const candidates = [String(this.homey.settings.get('targetAddress') || '').trim()];
+      try { candidates.push(await this.homey.cloud.getLocalAddress()); } catch (err) { /* not available */ }
+      candidates.push('127.0.0.1', 'localhost');
+      let lastError;
+      this.targetLocal = null;
+      for (const address of candidates.filter(Boolean)) {
+        try {
+          this.targetLocal = await HomeyAPI.createLocalAPI({ address: this.normaliseAddress(address), token });
+          break;
+        } catch (err) {
+          lastError = err;
+        }
+      }
+      if (!this.targetLocal) throw lastError || new Error('No address');
+      this.targetLocalToken = token;
+    }
+    return this.targetLocal;
+  }
+
+  /** Save the API key of this Homey and test it by reading the variables. */
+  async connectTarget({ token }) {
+    if (token) this.homey.settings.set('targetToken', String(token).trim());
+    this.targetLocal = null;
+    this.cache = {};
+    const api = await this.targetApi();
+    if (api === this.appApi) throw new Error(this.homey.__('errors.noTargetToken'));
+    await api.logic.getVariables();
+    return { ok: true };
+  }
+
   /** Save address + token and test them by reading the flows of the source Homey. */
   async connect({ address, token }) {
     const a = this.normaliseAddress(address);
@@ -62,6 +101,7 @@ class FlowMoverApp extends Homey.App {
     return {
       address: this.homey.settings.get('address') || '',
       hasToken: !!this.homey.settings.get('token'),
+      hasTargetToken: !!this.homey.settings.get('targetToken'),
       language: this.homey.i18n.getLanguage(),
     };
   }
@@ -118,7 +158,7 @@ class FlowMoverApp extends Homey.App {
   /** Everything needed to map ids from source to target. */
   async context(selected = []) {
     const src = await this.load(await this.getSource(), 'source', false);
-    const dst = await this.load(this.target, 'target', true);
+    const dst = await this.load(await this.targetApi(), 'target', true);
     const overrides = this.homey.settings.get('deviceMap') || {};
     const deviceMatch = M.matchDevices(Object.values(src.devices), Object.values(dst.devices), src.zones, dst.zones, overrides);
     const varMap = M.matchByName(Object.values(src.variables), Object.values(dst.variables), true);
@@ -214,7 +254,7 @@ class FlowMoverApp extends Homey.App {
       const parent = created[String(z.parent).toLowerCase()];
       if (!parent) { results.push({ type: 'zone', name: c.path, ok: false, error: 'parent zone missing' }); continue; }
       try {
-        const nz = await this.target.zones.createZone({ zone: { name: z.name, icon: z.icon || 'default', parent } });
+        const nz = await (await this.targetApi()).zones.createZone({ zone: { name: z.name, icon: z.icon || 'default', parent } });
         created[c.id] = nz.id;
         results.push({ type: 'zone', name: c.path, ok: true });
       } catch (err) {
@@ -225,7 +265,7 @@ class FlowMoverApp extends Homey.App {
       const zone = created[String(ctx.src.devices[m.srcId].zone).toLowerCase()];
       if (!zone) { results.push({ type: 'device', name: m.name, ok: false, error: m.to }); continue; }
       try {
-        await this.target.devices.updateDevice({ id: m.id, device: { zone } });
+        await (await this.targetApi()).devices.updateDevice({ id: m.id, device: { zone } });
         results.push({ type: 'device', name: m.name, ok: true, to: m.to });
       } catch (err) {
         results.push({ type: 'device', name: m.name, ok: false, error: err.message });
@@ -266,7 +306,7 @@ class FlowMoverApp extends Homey.App {
         const columns = M.rewrite(M.plain(db.columns || []), ctx.idMap).map((col) => ({
           ...col, id: crypto.randomUUID(), widgets: (col.widgets || []).map((w) => ({ ...w, id: crypto.randomUUID() })),
         }));
-        await this.target.dashboards.createDashboard({ dashboard: { name, columns } });
+        await (await this.targetApi()).dashboards.createDashboard({ dashboard: { name, columns } });
         results.push({ type: 'dashboard', name, ok: true });
       } catch (err) {
         results.push({ type: 'dashboard', name, ok: false, error: err.message });
@@ -308,7 +348,7 @@ class FlowMoverApp extends Homey.App {
     this.cache = {};
     const ctx = await this.context();
     const src = await this.favoritesOf(await this.getSource());
-    const dst = await this.favoritesOf(this.target).catch(() => ({}));
+    const dst = await this.favoritesOf(await this.targetApi()).catch(() => ({}));
     const results = [];
     for (const [key, value] of Object.entries(src)) {
       // Keep only items that could be converted to an id of this Homey
@@ -332,7 +372,7 @@ class FlowMoverApp extends Homey.App {
         continue;
       }
       try {
-        await this.target.users.updateUserMeProperties({ id: key, value: merged });
+        await (await this.targetApi()).users.updateUserMeProperties({ id: key, value: merged });
         const count = Array.isArray(merged) ? merged.length : Object.keys(merged).length;
         results.push({ type: 'favorites', name: key, ok: true, count });
       } catch (err) {
@@ -360,7 +400,7 @@ class FlowMoverApp extends Homey.App {
         value = Object.fromEntries(Object.entries(value).map(([k, v]) => [ctx.idMap[String(k).toLowerCase()] || k, v]));
       }
       try {
-        await this.target.apps.setAppSetting({ id: WIDGET_APP, name: key, value });
+        await (await this.targetApi()).apps.setAppSetting({ id: WIDGET_APP, name: key, value });
         out.push({ type: 'settings', name: `Compact Widgets: ${key}`, ok: true });
       } catch (err) {
         // Apps may not write each other's settings directly: use the import endpoint of Compact Widgets (0.11+)
@@ -469,7 +509,7 @@ class FlowMoverApp extends Homey.App {
       const body = { name: g.name, class: g.class || 'other', zoneId, deviceIds: members };
       if (g.iconOverride) body.iconOverride = g.iconOverride;
       try {
-        await this.target.devices.createGroup({ group: body });
+        await (await this.targetApi()).devices.createGroup({ group: body });
         results.push({ type: 'group', name: g.name, ok: true, members: members.length, of: (g.members || []).length });
       } catch (err) {
         results.push({ type: 'group', name: g.name, ok: false, error: err.message });
@@ -498,7 +538,7 @@ class FlowMoverApp extends Homey.App {
   /** Install an app from the Homey App Store on this Homey (same channel as on the other Homey). */
   async installApp({ id, channel }) {
     if (!id || !/^[a-z0-9._-]+$/i.test(id)) throw new Error('Invalid app id');
-    await this.target.apps.installFromAppStore({ id, channel: channel === 'test' ? 'test' : 'live', waitForInstall: true });
+    await (await this.targetApi()).apps.installFromAppStore({ id, channel: channel === 'test' ? 'test' : 'live', waitForInstall: true });
     this.cache = {};
     return true;
   }
@@ -512,7 +552,7 @@ class FlowMoverApp extends Homey.App {
       const v = ctx.src.variables[u];
       if (!v || ctx.varMap[u]) continue;
       try {
-        const created = await this.target.logic.createVariable({ variable: { name: v.name, type: v.type, value: v.value } });
+        const created = await (await this.targetApi()).logic.createVariable({ variable: { name: v.name, type: v.type, value: v.value } });
         ctx.varMap[u] = created.id;
         results.push({ type: 'variable', name: v.name, ok: true, id: created.id, srcId: u });
       } catch (err) {
@@ -553,7 +593,7 @@ class FlowMoverApp extends Homey.App {
     const parent = f.parent ? await this.ensureFolder(f.parent, ctx, created) : null;
     let t = Object.values(ctx.dst.folders).find((d) => M.norm(d.name) === M.norm(f.name) && (d.parent || null) === (parent || null));
     if (!t) {
-      t = await this.target.flow.createFlowFolder({ flowfolder: parent ? { name: f.name, parent } : { name: f.name } });
+      t = await (await this.targetApi()).flow.createFlowFolder({ flowfolder: parent ? { name: f.name, parent } : { name: f.name } });
       ctx.dst.folders[String(t.id).toLowerCase()] = { id: t.id, name: t.name, parent: parent || null };
     }
     created[key] = t.id;
@@ -598,8 +638,8 @@ class FlowMoverApp extends Homey.App {
         const enabled = keepEnabled ? flow.enabled !== false : false;
         const body = M.flowBody(flow, kind, ctx.idMap, folder, enabled);
         const created = kind === 'advanced'
-          ? await this.target.flow.createAdvancedFlow({ advancedflow: body })
-          : await this.target.flow.createFlow({ flow: body });
+          ? await (await this.targetApi()).flow.createAdvancedFlow({ advancedflow: body })
+          : await (await this.targetApi()).flow.createFlow({ flow: body });
         ctx.idMap[String(flow.id).toLowerCase()] = created.id;
         createdFlows.push({ flow, kind, created, folder, enabled });
         results.push({ type: kind, name: flow.name, ok: true, id: created.id });
@@ -616,8 +656,8 @@ class FlowMoverApp extends Homey.App {
       if (!refs.length) continue;
       try {
         const body = M.flowBody(flow, kind, ctx.idMap, folder, enabled);
-        if (kind === 'advanced') await this.target.flow.updateAdvancedFlow({ id: created.id, advancedflow: body });
-        else await this.target.flow.updateFlow({ id: created.id, flow: body });
+        if (kind === 'advanced') await (await this.targetApi()).flow.updateAdvancedFlow({ id: created.id, advancedflow: body });
+        else await (await this.targetApi()).flow.updateFlow({ id: created.id, flow: body });
       } catch (err) {
         results.push({ type: kind, name: flow.name, ok: false, error: `${this.homey.__('errors.flowRefs')}: ${err.message}` });
       }

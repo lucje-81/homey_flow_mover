@@ -9,6 +9,10 @@ module.exports = {
     return homey.app.connect(body || {});
   },
 
+  async connectTarget({ homey, body }) {
+    return homey.app.connectTarget(body || {});
+  },
+
   async getAnalysis({ homey }) {
     return homey.app.analyse();
   },

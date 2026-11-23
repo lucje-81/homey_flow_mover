@@ -6,7 +6,8 @@
     "appSettings": "De API-sleutel mag de instellingen van apps niet lezen. Maak een sleutel aan met het recht Apps (niet alleen lezen) en verbind opnieuw.",
     "favorites": "De API-sleutel mag je gebruikersgegevens (favorieten) niet lezen. Maak een sleutel aan met het recht Gebruikers en verbind opnieuw.",
     "widgetImport": "Werk Compacte widgets bij naar versie 0.11 of nieuwer en probeer opnieuw",
-    "groupMembers": "Geen van de leden is op deze Homey gekoppeld. Voeg de toestellen eerst toe (of via Homey Link)."
+    "groupMembers": "Geen van de leden is op deze Homey gekoppeld. Voeg de toestellen eerst toe (of via Homey Link).",
+    "noTargetToken": "Vul eerst een API-sleutel van deze Homey in."
   },
   "settings": {
     "title": "Flow-verhuizer",
@@ -140,7 +141,16 @@
     "sysHelp_virtualsocket": "Ingebouwde toestellen van Homey: maak ze hier opnieuw aan met dezelfde naam, of haal ze binnen via Homey Link.",
     "sysHelp_other": "Ingebouwd toesteltype van Homey (geen app): voeg het hier opnieuw toe met dezelfde naam, of haal het binnen via Homey Link.",
     "groupMembers": "{found} van {total} leden gekoppeld",
-    "createGroups": "Aangevinkte groepen aanmaken"
+    "createGroups": "Aangevinkte groepen aanmaken",
+    "targetTitle": "API-sleutel van deze Homey",
+    "targetHint": "Homey laat een app op zijn eigen Homey alleen lezen. Om variabelen, flows, zones, groepen, dashboards en favorieten aan te maken is een API-sleutel van deze Homey (de SHS) nodig.",
+    "tkey1": "Open my.homey.app en kies bovenaan deze Homey (de Self-Hosted Server).",
+    "tkey2": "Ga naar Instellingen → API-sleutels → Nieuwe API-sleutel, bv. “Flow-verhuizer (schrijven)”.",
+    "tkey3": "Vink alle rechten aan (Toestellen, Flows, Logica, Zones, Dashboards, Gebruikers, Apps), kopieer de sleutel en plak hem hieronder. Verwijder hem na het verhuizen.",
+    "targetToken": "API-sleutel van deze Homey",
+    "save": "Bewaren",
+    "targetOk": "API-sleutel van deze Homey bewaard en getest.",
+    "targetMissing": "Nog geen API-sleutel van deze Homey: aanmaken (variabelen, flows, …) zal mislukken met “Missing Scopes”."
   },
   "copy": "kopie"
 }

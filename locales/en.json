@@ -6,7 +6,8 @@
     "appSettings": "The API key may not read app settings. Create a key with the Apps permission (not read only) and connect again.",
     "favorites": "The API key may not read your user data (favorites). Create a key with the Users permission and connect again.",
     "widgetImport": "Update Compact Widgets to version 0.11 or newer and try again",
-    "groupMembers": "None of the members is matched on this Homey. Add the devices first (or via Homey Link)."
+    "groupMembers": "None of the members is matched on this Homey. Add the devices first (or via Homey Link).",
+    "noTargetToken": "Enter an API key of this Homey first."
   },
   "settings": {
     "title": "Flow Mover",
@@ -140,7 +141,16 @@
     "sysHelp_virtualsocket": "Homey's built-in devices: create them again here with the same name, or bring them in with Homey Link.",
     "sysHelp_other": "Homey's built-in device type (not an app): add it again here with the same name, or bring it in with Homey Link.",
     "groupMembers": "{found} of {total} members matched",
-    "createGroups": "Create ticked groups"
+    "createGroups": "Create ticked groups",
+    "targetTitle": "API key of this Homey",
+    "targetHint": "Homey only lets an app read its own Homey. To create variables, flows, zones, groups, dashboards and favorites, an API key of this Homey (the SHS) is needed.",
+    "tkey1": "Open my.homey.app and select this Homey (the Self-Hosted Server) at the top.",
+    "tkey2": "Go to Settings → API Keys → New API Key, e.g. “Flow Mover (write)”.",
+    "tkey3": "Tick all permissions (Devices, Flows, Logic, Zones, Dashboards, Users, Apps), copy the key and paste it below. Delete it after moving.",
+    "targetToken": "API key of this Homey",
+    "save": "Save",
+    "targetOk": "API key of this Homey saved and tested.",
+    "targetMissing": "No API key of this Homey yet: creating (variables, flows, …) will fail with “Missing Scopes”."
   },
   "copy": "copy"
 }

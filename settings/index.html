@@ -70,6 +70,14 @@
       <button id="connect" class="primary" data-t="connect"></button>
     </div>
     <div class="status" id="connStatus"></div>
+    <h3 data-t="targetTitle"></h3>
+    <p class="hint" data-t="targetHint"></p>
+    <details class="help"><summary data-t="keyHelp"></summary><ol id="targetKeySteps"></ol></details>
+    <div class="row">
+      <input id="targetToken" type="password" style="flex:1 1 220px" autocomplete="off">
+      <button id="connectTarget" class="primary" data-t="save"></button>
+    </div>
+    <div class="status" id="targetStatus"></div>
   </div>
 
   <div class="card off" id="stepMissing">
@@ -405,6 +413,22 @@
       $('search').placeholder = t('search');
       $('keySteps').innerHTML = [1, 2, 3, 4].map(function (i) { return '<li>' + esc(t('key' + i)) + '</li>'; }).join('');
       $('connect').addEventListener('click', connect);
+      $('targetKeySteps').innerHTML = [1, 2, 3].map(function (i) { return '<li>' + esc(t('tkey' + i)) + '</li>'; }).join('');
+      $('targetToken').placeholder = t('targetToken');
+      $('connectTarget').addEventListener('click', function () {
+        $('connectTarget').disabled = true;
+        $('targetStatus').className = 'status';
+        $('targetStatus').textContent = t('connecting');
+        api('POST', '/connect-target', { token: $('targetToken').value }).then(function () {
+          $('targetToken').value = '';
+          $('targetToken').placeholder = t('tokenSaved');
+          $('targetStatus').className = 'status ok';
+          $('targetStatus').textContent = t('targetOk');
+        }).catch(function (err) {
+          $('targetStatus').className = 'status err';
+          $('targetStatus').textContent = t('connectFailed') + ' ' + (err.message || err);
+        }).then(function () { $('connectTarget').disabled = false; });
+      });
       $('favList').addEventListener('click', function (e) {
         if (e.target.id !== 'copyFav') return;
         e.target.disabled = true;
@@ -509,6 +533,8 @@
       api('GET', '/status').then(function (s) {
         $('address').value = s.address || '';
         if (s.hasToken) $('token').placeholder = t('tokenSaved');
+        if (s.hasTargetToken) { $('targetToken').placeholder = t('tokenSaved'); $('targetStatus').className = 'status ok'; $('targetStatus').textContent = t('targetOk'); }
+        else { $('targetStatus').className = 'status warn'; $('targetStatus').textContent = t('targetMissing'); }
         Homey.ready();
         if (s.address && s.hasToken) {
           $('connStatus').textContent = t('connecting');

@@ -1,4 +1,8 @@
 {
+  "1.8.0": {
+    "en": "API key of this Homey for creating variables, flows, zones, groups, dashboards and favorites (the app's own access is read-only: 'Missing Scopes')",
+    "nl": "API-sleutel van deze Homey voor het aanmaken van variabelen, flows, zones, groepen, dashboards en favorieten (de app zelf mag alleen lezen: 'Missing Scopes')"
+  },
   "1.7.0": {
     "en": "Homey's own device types (groups, Matter, virtual sockets) are no longer shown as apps; device groups can be rebuilt",
     "nl": "Ingebouwde toesteltypes van Homey (groepen, Matter, virtuele stopcontacten) staan niet meer bij de apps; toestelgroepen kunnen nagebouwd worden"
