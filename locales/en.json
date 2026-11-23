@@ -87,6 +87,17 @@
     "createVars": "Create ticked variables",
     "creating": "Creating…",
     "yes": "yes",
-    "no": "no"
+    "no": "no",
+    "stepZones": "Rooms and zones",
+    "stepZonesHint": "Devices added via Homey Link or added again often sit in the root zone. This rebuilds the zones of the other Homey (floors, rooms) and puts the matched devices in the same room as on the other Homey.",
+    "zonesOk": "All matched devices are already in the same zone as on the other Homey.",
+    "zonesSummary": "{zones} zone(s) to create · {devices} device(s) to move",
+    "zonesNew": "New zones",
+    "zonesMove": "Move devices",
+    "selectAll": "Select all",
+    "zonesApply": "Create zones and move devices",
+    "zonesConfirm": "Move {n} device(s) to their zone and create the zones needed?",
+    "zonesBusy": "Working…",
+    "zonesDone": "Done: {zones} zone(s) created, {devices} device(s) moved."
   }
 }

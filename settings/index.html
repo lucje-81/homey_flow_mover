@@ -91,8 +91,15 @@
     <div id="devList"></div>
   </div>
 
+  <div class="card off" id="stepZones">
+    <h2><span class="n">4</span><span data-t="stepZones"></span></h2>
+    <p class="hint" data-t="stepZonesHint"></p>
+    <div id="zoneSummary" class="status"></div>
+    <div id="zoneList"></div>
+  </div>
+
   <div class="card off" id="step3">
-    <h2><span class="n">4</span><span data-t="step3"></span></h2>
+    <h2><span class="n">5</span><span data-t="step3"></span></h2>
     <p class="hint" data-t="step3Hint"></p>
     <div class="row"><input id="search" type="search" style="flex:1"></div>
     <div class="filters" id="filters"></div>
@@ -161,6 +168,8 @@
         data = r;
         $('step2').classList.remove('off');
         $('stepMissing').classList.remove('off');
+        $('stepZones').classList.remove('off');
+        renderZones();
         renderMissing();
         $('step3').classList.remove('off');
         var keep = {};
@@ -192,6 +201,28 @@
         return '<label class="miss"><input type="checkbox" data-var="' + esc(v.id) + '"' + (v.flows ? ' checked' : '') + '><span class="nm"><b>' + esc(v.name) + '</b><small>'
           + esc(t('type_' + v.type) + ' · ' + t('value') + ': ' + (v.value === '' || v.value == null ? '–' : v.type === 'boolean' ? t(v.value ? 'yes' : 'no') : String(v.value)) + ' · ' + (v.flows ? t('usedIn', { n: v.flows }) : t('notUsed'))) + '</small></span></label>';
       }).join('') + '<div class="row" style="margin-top:8px"><button id="createVars" class="small primary">' + esc(t('createVars')) + '</button><span class="status" id="varStatus"></span></div>';
+    }
+
+    // ---- zones
+    function renderZones() {
+      var z = data.zones || { create: [], moves: [] };
+      if (!z.moves.length && !z.create.length) {
+        $('zoneSummary').textContent = '';
+        $('zoneList').innerHTML = '<div class="empty ok">' + esc(t('zonesOk')) + '</div>';
+        return;
+      }
+      $('zoneSummary').textContent = t('zonesSummary', { zones: z.create.length, devices: z.moves.length });
+      var html = '';
+      if (z.create.length) {
+        html += '<h3>' + esc(t('zonesNew')) + '</h3><div class="hint">' + z.create.map(function (c) { return esc(c.path); }).join(' · ') + '</div>';
+      }
+      if (z.moves.length) html += '<h3>' + esc(t('zonesMove')) + '</h3><div class="row"><button class="small" id="zoneAll">' + esc(t('selectAll')) + '</button><button class="small" id="zoneNone">' + esc(t('selectNone')) + '</button></div>';
+      html += z.moves.map(function (m) {
+        return '<label class="miss"><input type="checkbox" data-move="' + esc(m.id) + '" checked><span class="nm"><b>' + esc(m.name) + '</b><small>'
+          + esc(m.from) + ' → <b style="display:inline;color:#222">' + esc(m.to) + '</b></small></span></label>';
+      }).join('');
+      html += '<div class="row" style="margin-top:8px"><button id="applyZones" class="small primary">' + esc(t('zonesApply')) + '</button><span class="status" id="zoneStatus"></span></div>';
+      $('zoneList').innerHTML = html;
     }
 
     // ---- step 2
@@ -290,6 +321,25 @@
       $('search').placeholder = t('search');
       $('keySteps').innerHTML = [1, 2, 3, 4].map(function (i) { return '<li>' + esc(t('key' + i)) + '</li>'; }).join('');
       $('connect').addEventListener('click', connect);
+      $('zoneList').addEventListener('click', function (e) {
+        var boxes = [].slice.call(document.querySelectorAll('[data-move]'));
+        if (e.target.id === 'zoneAll' || e.target.id === 'zoneNone') { boxes.forEach(function (b) { b.checked = e.target.id === 'zoneAll'; }); return; }
+        if (e.target.id !== 'applyZones') return;
+        var ids = boxes.filter(function (b) { return b.checked; }).map(function (b) { return b.getAttribute('data-move'); });
+        if (!ids.length && !(data.zones && data.zones.create.length)) return;
+        H.confirm(t('zonesConfirm', { n: ids.length }), 'warning', function (err, yes) {
+          if (err || !yes) return;
+          e.target.disabled = true;
+          $('zoneStatus').textContent = t('zonesBusy');
+          api('POST', '/zones', { deviceIds: ids }).then(function (res) {
+            var bad = res.filter(function (r) { return !r.ok; });
+            var moved = res.filter(function (r) { return r.ok && r.type === 'device'; }).length;
+            var zones = res.filter(function (r) { return r.ok && r.type === 'zone'; }).length;
+            if (bad.length) H.alert(bad.map(function (r) { return r.name + ': ' + r.error; }).join('\n'));
+            return analyse().then(function () { $('zoneSummary').textContent = t('zonesDone', { zones: zones, devices: moved }); });
+          }).catch(function (er) { H.alert(er.message || String(er)); e.target.disabled = false; });
+        });
+      });
       $('appList').addEventListener('click', function (e) {
         var b = e.target.closest('[data-install]');
         if (!b) return;

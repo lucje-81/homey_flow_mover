@@ -87,6 +87,17 @@
     "createVars": "Aangevinkte variabelen aanmaken",
     "creating": "Aanmaken…",
     "yes": "ja",
-    "no": "nee"
+    "no": "nee",
+    "stepZones": "Kamers en zones",
+    "stepZonesHint": "Toestellen die via Homey Link of opnieuw toegevoegd zijn, staan vaak in de hoofdzone. Hier worden de zones van de andere Homey (verdiepingen, kamers) nagebouwd en de gekoppelde toestellen in dezelfde kamer gezet als op de andere Homey.",
+    "zonesOk": "Alle gekoppelde toestellen staan al in dezelfde zone als op de andere Homey.",
+    "zonesSummary": "{zones} zone(s) aan te maken · {devices} toestel(len) te verplaatsen",
+    "zonesNew": "Nieuwe zones",
+    "zonesMove": "Toestellen verplaatsen",
+    "selectAll": "Alles selecteren",
+    "zonesApply": "Zones aanmaken en toestellen verplaatsen",
+    "zonesConfirm": "{n} toestel(len) naar hun zone verplaatsen en de nodige zones aanmaken?",
+    "zonesBusy": "Bezig…",
+    "zonesDone": "Klaar: {zones} zone(s) aangemaakt, {devices} toestel(len) verplaatst."
   }
 }

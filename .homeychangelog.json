@@ -1,4 +1,8 @@
 {
+  "1.2.0": {
+    "en": "Rooms and zones: rebuild the zones of the other Homey and move matched devices into the same room",
+    "nl": "Kamers en zones: de zones van de andere Homey nabouwen en gekoppelde toestellen in dezelfde kamer zetten"
+  },
   "1.1.0": {
     "en": "Overview of missing apps (install App Store apps with one button) and variables (create them with one button)",
     "nl": "Overzicht van ontbrekende apps (App Store-apps met één knop installeren) en variabelen (met één knop aanmaken)"

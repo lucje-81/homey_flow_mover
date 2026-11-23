@@ -11,7 +11,8 @@ Install the app on the Homey that should **receive** the flows (e.g. the Self-Ho
 1. **Connect to the other Homey**: its IP address and an API key of that Homey (my.homey.app → select the old Homey → Settings → API Keys → New API Key, read access to Devices, Flows, Logic, Zones, Users and Apps is enough).
 2. **What is missing**: the apps your flows use that are not installed on this Homey (App Store apps can be installed with one button, apps installed with the Homey CLI are listed with the command to install them), and the variables that don't exist here yet (create the ticked ones with one button)
 3. **Match devices**: every device used in your flows is matched to the device with the same name on this Homey (preferring the same app and zone). Unmatched or wrong matches can be chosen by hand; the choice is remembered.
-4. **Choose and move flows**: every flow shows its status
+4. **Rooms and zones**: rebuilds the zone structure of the other Homey (floors, rooms, same icons) and moves every matched device into the same room as on the other Homey — handy after importing devices with Homey Link, which puts them all in the root zone. Zones are matched by their path of names, so existing zones are reused
+5. **Choose and move flows**: every flow shows its status
    - ✓ ready
    - ! remark (e.g. a variable will be created, a "start flow" card points to a flow that is not moved)
    - ✕ problem: unmatched device, app not installed on this Homey, or a card that does not exist on this Homey (checked against the real list of flow cards of this Homey)

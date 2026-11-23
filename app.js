@@ -85,7 +85,7 @@ class FlowMoverApp extends Homey.App {
     const byId = (obj, pick) => Object.fromEntries(Object.values(obj || {}).map((x) => [String(x.id).toLowerCase(), pick(x)]));
     const data = {
       devices: byId(devices, (d) => ({ id: String(d.id).toLowerCase(), name: d.name, zone: d.zone, driverId: d.driverId || d.driverUri, ownerUri: d.ownerUri })),
-      zones: byId(zones, (z) => ({ id: z.id, name: z.name, parent: z.parent })),
+      zones: byId(zones, (z) => ({ id: z.id, name: z.name, parent: z.parent || null, icon: z.icon || 'default' })),
       folders: byId(folders, (f) => ({ id: f.id, name: f.name, parent: f.parent || null })),
       variables: byId(variables, (v) => ({ id: v.id, name: v.name, type: v.type, value: v.value })),
       users: byId(users, (u) => ({ id: u.id, name: u.name })),
@@ -109,7 +109,7 @@ class FlowMoverApp extends Homey.App {
     const overrides = this.homey.settings.get('deviceMap') || {};
     const deviceMatch = M.matchDevices(Object.values(src.devices), Object.values(dst.devices), src.zones, dst.zones, overrides);
     const varMap = M.matchByName(Object.values(src.variables), Object.values(dst.variables), true);
-    const zoneMap = M.matchByName(Object.values(src.zones), Object.values(dst.zones));
+    const zoneMap = M.matchZones(src.zones, dst.zones);
     const userMap = M.matchByName(Object.values(src.users), Object.values(dst.users));
     const dstFlowNames = new Set([...dst.flows, ...dst.advanced].map((f) => M.norm(f.name)));
     // Source flows that already exist on the target (same name and kind) → for "start flow" cards
@@ -153,8 +153,69 @@ class FlowMoverApp extends Homey.App {
       .sort((a, b) => a.name.localeCompare(b.name));
     return {
       flows, devices, targets, cardsChecked: !!(ctx.dstCards && ctx.dstCards.size),
-      missingApps: this.missingApps(ctx, flows), missingVariables: this.missingVariables(ctx),
+      missingApps: this.missingApps(ctx, flows), missingVariables: this.missingVariables(ctx), zones: this.zonePlan(ctx),
     };
+  }
+
+  /** Zones to create and matched devices that sit in another zone than on the other Homey. */
+  zonePlan(ctx) {
+    const show = (zones, id) => M.zonePath(zones, id).join(' / ') || ((M.rootZone(zones) || {}).name || '');
+    const create = Object.values(ctx.src.zones)
+      .filter((z) => z.parent && !ctx.zoneMap[String(z.id).toLowerCase()])
+      .map((z) => ({ id: String(z.id).toLowerCase(), path: show(ctx.src.zones, z.id), depth: M.zonePath(ctx.src.zones, z.id).length }))
+      .sort((a, b) => a.depth - b.depth || a.path.localeCompare(b.path));
+    const moves = [];
+    for (const [srcId, m] of Object.entries(ctx.deviceMatch)) {
+      if (!m.target) continue;
+      const s = ctx.src.devices[srcId];
+      const d = ctx.dst.devices[String(m.target).toLowerCase()];
+      if (!s || !d) continue;
+      const want = M.zonePath(ctx.src.zones, s.zone).map(M.norm).join('/');
+      const have = M.zonePath(ctx.dst.zones, d.zone).map(M.norm).join('/');
+      if (want === have) continue;
+      moves.push({ id: d.id, srcId, name: d.name, from: show(ctx.dst.zones, d.zone), to: show(ctx.src.zones, s.zone) });
+    }
+    moves.sort((a, b) => a.to.localeCompare(b.to) || a.name.localeCompare(b.name));
+    return { create, moves };
+  }
+
+  /** Create the missing zones (same names, icons and nesting) and move the chosen devices into their zone. */
+  async applyZones({ deviceIds }) {
+    this.cache = {};
+    const ctx = await this.context();
+    const results = [];
+    const plan = this.zonePlan(ctx);
+    const created = { ...ctx.zoneMap };
+    const srcRoot = M.rootZone(ctx.src.zones);
+    const dstRoot = M.rootZone(ctx.dst.zones);
+    if (srcRoot && dstRoot) created[String(srcRoot.id).toLowerCase()] = dstRoot.id;
+    const wanted = new Set((deviceIds || []).map((x) => String(x).toLowerCase()));
+    const moves = plan.moves.filter((m) => wanted.has(String(m.id).toLowerCase()));
+    // All zones of the other Homey that are missing here, parents first
+    for (const c of plan.create) {
+      const z = ctx.src.zones[c.id];
+      const parent = created[String(z.parent).toLowerCase()];
+      if (!parent) { results.push({ type: 'zone', name: c.path, ok: false, error: 'parent zone missing' }); continue; }
+      try {
+        const nz = await this.target.zones.createZone({ zone: { name: z.name, icon: z.icon || 'default', parent } });
+        created[c.id] = nz.id;
+        results.push({ type: 'zone', name: c.path, ok: true });
+      } catch (err) {
+        results.push({ type: 'zone', name: c.path, ok: false, error: err.message });
+      }
+    }
+    for (const m of moves) {
+      const zone = created[String(ctx.src.devices[m.srcId].zone).toLowerCase()];
+      if (!zone) { results.push({ type: 'device', name: m.name, ok: false, error: m.to }); continue; }
+      try {
+        await this.target.devices.updateDevice({ id: m.id, device: { zone } });
+        results.push({ type: 'device', name: m.name, ok: true, to: m.to });
+      } catch (err) {
+        results.push({ type: 'device', name: m.name, ok: false, error: err.message });
+      }
+    }
+    this.cache = {};
+    return results;
   }
 
   /** Apps used by the flows (cards or devices) that are not installed on this Homey. */

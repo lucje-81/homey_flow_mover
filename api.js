@@ -29,6 +29,10 @@ module.exports = {
     return homey.app.createVariables(body || {});
   },
 
+  async applyZones({ homey, body }) {
+    return homey.app.applyZones(body || {});
+  },
+
   async migrate({ homey, body }) {
     return homey.app.migrate(body || {});
   },
