@@ -2,7 +2,8 @@
   "errors": {
     "notConnected": "Nog niet verbonden: vul het adres en de API-sleutel van de andere Homey in.",
     "noAddress": "Vul het IP-adres van de andere Homey in.",
-    "flowRefs": "Kaarten die andere flows starten konden niet bijgewerkt worden"
+    "flowRefs": "Kaarten die andere flows starten konden niet bijgewerkt worden",
+    "appSettings": "De API-sleutel mag de instellingen van apps niet lezen. Maak een sleutel aan met het recht Apps (niet alleen lezen) en verbind opnieuw."
   },
   "settings": {
     "title": "Flow-verhuizer",
@@ -12,7 +13,7 @@
     "keyHelp": "Hoe maak ik een API-sleutel?",
     "key1": "Open my.homey.app in een browser en kies bovenaan de Homey waar je flows nu staan (bv. de Pro).",
     "key2": "Ga naar Instellingen → API-sleutels → Nieuwe API-sleutel.",
-    "key3": "Geef een naam (bv. Flow-verhuizer) en vink enkel de leesrechten aan: Toestellen, Flows, Logica, Zones, Gebruikers en Apps (alleen lezen).",
+    "key3": "Geef een naam (bv. Flow-verhuizer) en vink leesrechten aan voor Toestellen, Flows, Logica, Zones, Gebruikers en Dashboards, en het recht Apps (nodig om de instellingen van Compacte widgets mee te nemen).",
     "key4": "Kopieer de sleutel en plak hem hieronder. Je kunt hem na het verhuizen weer verwijderen.",
     "address": "IP-adres, bv. 192.168.1.20",
     "token": "API-sleutel",
@@ -98,6 +99,14 @@
     "zonesApply": "Zones aanmaken en toestellen verplaatsen",
     "zonesConfirm": "{n} toestel(len) naar hun zone verplaatsen en de nodige zones aanmaken?",
     "zonesBusy": "Bezig…",
-    "zonesDone": "Klaar: {zones} zone(s) aangemaakt, {devices} toestel(len) verplaatst."
-  }
+    "zonesDone": "Klaar: {zones} zone(s) aangemaakt, {devices} toestel(len) verplaatst.",
+    "stepDash": "Dashboards",
+    "stepDashHint": "Kopieer je dashboards met alle widgets. Toestellen, zones en flows in de widgets worden omgezet naar die van deze Homey. Doe dit na de flows, zodat flow-knoppen meteen kloppen. Een dashboard met dezelfde naam krijgt “(kopie)” achter de naam.",
+    "noDashboards": "Geen dashboards gevonden op de andere Homey.",
+    "dashExists": "Er bestaat al een dashboard met deze naam (wordt als kopie aangemaakt).",
+    "widgets": "{n} widget(s)",
+    "optWidgetSettings": "Ook de instellingen van Compacte widgets overnemen (meterpanelen, iconen, gekozen waarden van omvormer/ketel/laadpaal); vervangt de huidige instellingen van die app op deze Homey",
+    "moveDash": "Geselecteerde dashboards overzetten"
+  },
+  "copy": "kopie"
 }

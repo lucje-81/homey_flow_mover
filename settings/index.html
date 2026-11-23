@@ -117,6 +117,12 @@
     <ul class="result" id="result"></ul>
   </div>
 
+  <div class="card off" id="stepDash">
+    <h2><span class="n">6</span><span data-t="stepDash"></span></h2>
+    <p class="hint" data-t="stepDashHint"></p>
+    <div id="dashList"></div>
+  </div>
+
   <script type="text/javascript">
     var H;
     var data = null;
@@ -169,6 +175,8 @@
         $('step2').classList.remove('off');
         $('stepMissing').classList.remove('off');
         $('stepZones').classList.remove('off');
+        $('stepDash').classList.remove('off');
+        renderDashboards();
         renderZones();
         renderMissing();
         $('step3').classList.remove('off');
@@ -201,6 +209,22 @@
         return '<label class="miss"><input type="checkbox" data-var="' + esc(v.id) + '"' + (v.flows ? ' checked' : '') + '><span class="nm"><b>' + esc(v.name) + '</b><small>'
           + esc(t('type_' + v.type) + ' · ' + t('value') + ': ' + (v.value === '' || v.value == null ? '–' : v.type === 'boolean' ? t(v.value ? 'yes' : 'no') : String(v.value)) + ' · ' + (v.flows ? t('usedIn', { n: v.flows }) : t('notUsed'))) + '</small></span></label>';
       }).join('') + '<div class="row" style="margin-top:8px"><button id="createVars" class="small primary">' + esc(t('createVars')) + '</button><span class="status" id="varStatus"></span></div>';
+    }
+
+    // ---- dashboards
+    function renderDashboards() {
+      var list = data.dashboards || [];
+      if (!list.length) { $('dashList').innerHTML = '<div class="empty">' + esc(t('noDashboards')) + '</div>'; return; }
+      var html = list.map(function (d) {
+        var st = d.issues.length ? 'r' : d.exists ? 's' : 'g';
+        var lines = (d.exists ? ['<li>' + esc(t('dashExists')) + '</li>'] : []).concat(d.issues.map(function (i) { return '<li class="e">' + esc(t('issue_' + i.kind, { name: i.name })) + '</li>'; }));
+        return '<div class="flow"><div class="top"><input type="checkbox" data-dash="' + esc(d.id) + '"' + (st === 'g' ? ' checked' : '') + '>'
+          + '<span class="ic ' + st + '">' + { g: '✓', r: '✕', s: '=' }[st] + '</span><span class="nm"><b>' + esc(d.name) + '</b><small>' + esc(t('widgets', { n: d.widgets })) + '</small></span></div>'
+          + (lines.length ? '<ul>' + lines.join('') + '</ul>' : '') + '</div>';
+      }).join('');
+      if (data.widgetApp) html += '<label class="chk" style="margin-top:10px"><input id="optWidgetSettings" type="checkbox" checked> <span>' + esc(t('optWidgetSettings')) + '</span></label>';
+      html += '<div class="row" style="margin-top:8px"><button id="moveDash" class="small primary">' + esc(t('moveDash')) + '</button><span class="status" id="dashStatus"></span></div><ul class="result" id="dashResult"></ul>';
+      $('dashList').innerHTML = html;
     }
 
     // ---- zones
@@ -321,6 +345,18 @@
       $('search').placeholder = t('search');
       $('keySteps').innerHTML = [1, 2, 3, 4].map(function (i) { return '<li>' + esc(t('key' + i)) + '</li>'; }).join('');
       $('connect').addEventListener('click', connect);
+      $('dashList').addEventListener('click', function (e) {
+        if (e.target.id !== 'moveDash') return;
+        var ids = [].slice.call(document.querySelectorAll('[data-dash]:checked')).map(function (x) { return x.getAttribute('data-dash'); });
+        var ws = $('optWidgetSettings') && $('optWidgetSettings').checked;
+        if (!ids.length && !ws) return;
+        e.target.disabled = true;
+        $('dashStatus').textContent = t('zonesBusy');
+        api('POST', '/dashboards', { ids: ids, copyWidgetSettings: ws }).then(function (res) {
+          var html = res.map(function (r) { return '<li class="' + (r.ok ? 'ok' : 'err') + '">' + esc(r.name) + ' — ' + esc(r.ok ? t('created') : r.error) + '</li>'; }).join('');
+          return analyse().then(function () { $('dashResult').innerHTML = html; });
+        }).catch(function (er) { H.alert(er.message || String(er)); e.target.disabled = false; });
+      });
       $('zoneList').addEventListener('click', function (e) {
         var boxes = [].slice.call(document.querySelectorAll('[data-move]'));
         if (e.target.id === 'zoneAll' || e.target.id === 'zoneNone') { boxes.forEach(function (b) { b.checked = e.target.id === 'zoneAll'; }); return; }

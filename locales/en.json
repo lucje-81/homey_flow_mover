@@ -2,7 +2,8 @@
   "errors": {
     "notConnected": "Not connected yet: enter the address and API key of the other Homey.",
     "noAddress": "Enter the IP address of the other Homey.",
-    "flowRefs": "Cards that start other flows could not be updated"
+    "flowRefs": "Cards that start other flows could not be updated",
+    "appSettings": "The API key may not read app settings. Create a key with the Apps permission (not read only) and connect again."
   },
   "settings": {
     "title": "Flow Mover",
@@ -12,7 +13,7 @@
     "keyHelp": "How do I create an API key?",
     "key1": "Open my.homey.app in a browser and select the Homey that has your flows now (e.g. the Pro) at the top.",
     "key2": "Go to Settings → API Keys → New API Key.",
-    "key3": "Give it a name (e.g. Flow Mover) and only tick read access: Devices, Flows, Logic, Zones, Users and Apps (read only).",
+    "key3": "Give it a name (e.g. Flow Mover) and tick read access to Devices, Flows, Logic, Zones, Users and Dashboards, and the Apps permission (needed to copy the Compact Widgets settings).",
     "key4": "Copy the key and paste it below. You can delete it again after moving.",
     "address": "IP address, e.g. 192.168.1.20",
     "token": "API key",
@@ -98,6 +99,14 @@
     "zonesApply": "Create zones and move devices",
     "zonesConfirm": "Move {n} device(s) to their zone and create the zones needed?",
     "zonesBusy": "Working…",
-    "zonesDone": "Done: {zones} zone(s) created, {devices} device(s) moved."
-  }
+    "zonesDone": "Done: {zones} zone(s) created, {devices} device(s) moved.",
+    "stepDash": "Dashboards",
+    "stepDashHint": "Copy your dashboards with all widgets. Devices, zones and flows in the widgets are converted to those of this Homey. Do this after the flows so flow buttons are right at once. A dashboard with the same name gets “(copy)” after its name.",
+    "noDashboards": "No dashboards found on the other Homey.",
+    "dashExists": "A dashboard with this name already exists (will be created as a copy).",
+    "widgets": "{n} widget(s)",
+    "optWidgetSettings": "Also copy the settings of Compact Widgets (gauge panels, icons, chosen values of inverter/boiler/charger); replaces the current settings of that app on this Homey",
+    "moveDash": "Move selected dashboards"
+  },
+  "copy": "copy"
 }

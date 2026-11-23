@@ -1,10 +1,13 @@
 'use strict';
 
+const crypto = require('crypto');
 const Homey = require('homey');
 const { HomeyAPI } = require('homey-api');
 const M = require('./lib/mover');
 
 const CACHE_MS = 60 * 1000;
+const WIDGET_APP = 'compact.widgets';
+const WIDGET_SETTINGS = ['panels', 'icons', 'energyFields'];
 
 class FlowMoverApp extends Homey.App {
 
@@ -69,7 +72,7 @@ class FlowMoverApp extends Homey.App {
     const cached = this.cache[side];
     if (cached && Date.now() - cached.time < CACHE_MS && (!withCards || cached.data.cards)) return cached.data;
     const safe = (p, fallback = {}) => p.catch((err) => { this.error(`${side}:`, err.message); return fallback; });
-    const [devices, zones, flows, advanced, folders, variables, users, apps, triggers, conditions, actions] = await Promise.all([
+    const [devices, zones, flows, advanced, folders, variables, users, apps, triggers, conditions, actions, dashboards] = await Promise.all([
       api.devices.getDevices(),
       safe(api.zones.getZones()),
       api.flow.getFlows(),
@@ -81,6 +84,7 @@ class FlowMoverApp extends Homey.App {
       withCards ? safe(api.flow.getFlowCardTriggers(), null) : null,
       withCards ? safe(api.flow.getFlowCardConditions(), null) : null,
       withCards ? safe(api.flow.getFlowCardActions(), null) : null,
+      safe(api.dashboards.getDashboards(), {}),
     ]);
     const byId = (obj, pick) => Object.fromEntries(Object.values(obj || {}).map((x) => [String(x.id).toLowerCase(), pick(x)]));
     const data = {
@@ -94,6 +98,7 @@ class FlowMoverApp extends Homey.App {
       apps: apps ? new Set(Object.keys(apps)) : null,
       appInfo: Object.fromEntries(Object.values(apps || {}).map((a) => [a.id, { id: a.id, name: a.name, origin: a.origin, channel: a.channel, version: a.version }])),
       cards: withCards && (triggers || conditions || actions) ? M.cardIdSet(triggers, conditions, actions) : null,
+      dashboards: Object.values(dashboards || {}).map((x) => M.plain(x)),
     };
     data.flowsById = {};
     data.flows.forEach((f) => { data.flowsById[String(f.id).toLowerCase()] = { name: f.name, kind: 'flow' }; });
@@ -154,6 +159,8 @@ class FlowMoverApp extends Homey.App {
     return {
       flows, devices, targets, cardsChecked: !!(ctx.dstCards && ctx.dstCards.size),
       missingApps: this.missingApps(ctx, flows), missingVariables: this.missingVariables(ctx), zones: this.zonePlan(ctx),
+      dashboards: this.analyseDashboards(ctx),
+      widgetApp: ctx.dstApps ? ctx.dstApps.has(WIDGET_APP) && !!(ctx.src.apps && ctx.src.apps.has(WIDGET_APP)) : false,
     };
   }
 
@@ -216,6 +223,74 @@ class FlowMoverApp extends Homey.App {
     }
     this.cache = {};
     return results;
+  }
+
+  /** Dashboards of the other Homey with the devices and apps their widgets need. */
+  analyseDashboards(ctx) {
+    const names = new Set(ctx.dst.dashboards.map((d) => M.norm(d.name)));
+    return ctx.src.dashboards.map((db) => {
+      const widgets = (db.columns || []).reduce((n, c) => n + ((c.widgets || []).length), 0);
+      const issues = [];
+      for (const u of M.collectUuids(db.columns)) {
+        if (ctx.src.devices[u] && !(ctx.deviceMatch[u] && ctx.deviceMatch[u].target)) issues.push({ kind: 'device', id: u, name: ctx.src.devices[u].name });
+      }
+      if (ctx.dstApps) {
+        for (const app of M.collectApps(db.columns)) if (!ctx.dstApps.has(app)) issues.push({ kind: 'app', id: app, name: (ctx.src.appInfo[app] || {}).name || app });
+      }
+      return { id: db.id, name: db.name, widgets, exists: names.has(M.norm(db.name)), issues };
+    }).sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /** Create the chosen dashboards here, with all device/zone/flow ids rewritten. */
+  async migrateDashboards({ ids, copyWidgetSettings }) {
+    this.cache = {};
+    const ctx = await this.context();
+    const results = [];
+    const wanted = new Set((ids || []).map((x) => String(x).toLowerCase()));
+    if (copyWidgetSettings) results.push(...await this.copyWidgetSettings(ctx));
+    for (const db of ctx.src.dashboards.filter((d) => wanted.has(String(d.id).toLowerCase()))) {
+      let name = db.name;
+      if (ctx.dst.dashboards.some((d) => M.norm(d.name) === M.norm(name))) name = `${name} (${this.homey.__('copy')})`;
+      try {
+        // New ids for columns and widgets, so a dashboard can be copied twice without clashes
+        const columns = M.rewrite(M.plain(db.columns || []), ctx.idMap).map((col) => ({
+          ...col, id: crypto.randomUUID(), widgets: (col.widgets || []).map((w) => ({ ...w, id: crypto.randomUUID() })),
+        }));
+        await this.target.dashboards.createDashboard({ dashboard: { name, columns } });
+        results.push({ type: 'dashboard', name, ok: true });
+      } catch (err) {
+        results.push({ type: 'dashboard', name, ok: false, error: err.message });
+      }
+    }
+    this.cache = {};
+    return results;
+  }
+
+  /** Settings of the Compact Widgets app (gauge panels, icons, chosen values), with device ids rewritten. */
+  async copyWidgetSettings(ctx) {
+    const src = await this.getSource();
+    let settings;
+    try {
+      settings = await src.apps.getAppSettings({ id: WIDGET_APP });
+    } catch (err) {
+      return [{ type: 'settings', name: 'Compact Widgets', ok: false, error: this.homey.__('errors.appSettings') }];
+    }
+    const out = [];
+    for (const key of WIDGET_SETTINGS) {
+      if (settings[key] === undefined || settings[key] === null) continue;
+      // Keys of icons/energyFields are device ids: rewrite keys as well as values
+      let value = M.rewrite(M.plain(settings[key]), ctx.idMap);
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        value = Object.fromEntries(Object.entries(value).map(([k, v]) => [ctx.idMap[String(k).toLowerCase()] || k, v]));
+      }
+      try {
+        await this.target.apps.setAppSetting({ id: WIDGET_APP, name: key, value });
+        out.push({ type: 'settings', name: `Compact Widgets: ${key}`, ok: true });
+      } catch (err) {
+        out.push({ type: 'settings', name: `Compact Widgets: ${key}`, ok: false, error: err.message });
+      }
+    }
+    return out;
   }
 
   /** Apps used by the flows (cards or devices) that are not installed on this Homey. */

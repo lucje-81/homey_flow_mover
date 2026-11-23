@@ -33,6 +33,10 @@ module.exports = {
     return homey.app.applyZones(body || {});
   },
 
+  async migrateDashboards({ homey, body }) {
+    return homey.app.migrateDashboards(body || {});
+  },
+
   async migrate({ homey, body }) {
     return homey.app.migrate(body || {});
   },
