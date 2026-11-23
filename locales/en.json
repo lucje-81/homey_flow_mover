@@ -74,7 +74,7 @@
     "created": "created",
     "skipped": "skipped (exists)",
     "stepMissing": "What is missing on this Homey?",
-    "stepMissingHint": "The apps and variables of the other Homey that your flows need but that are not here yet, and apps that have an older version here (flow cards may then be missing). Install or update them first: “Open in App Store” opens the app's page, click Install there and choose this Homey. Then click Refresh. After installing an app, add its devices yourself; step 3 then matches them automatically.",
+    "stepMissingHint": "The apps and variables of the other Homey that your flows need but that are not here yet, and apps that have an older version here (flow cards may then be missing). Install or update them first: with the API key of this Homey (step 1) the button installs the app directly; without it, it opens the App Store, click Install there and choose this Homey. Then click Refresh. After installing an app, add its devices yourself; step 3 then matches them automatically.",
     "appsTitle": "Apps",
     "varsTitle": "Variables",
     "noMissingApps": "All apps your flows use are installed on this Homey.",
@@ -150,7 +150,8 @@
     "targetToken": "API key of this Homey",
     "save": "Save",
     "targetOk": "API key of this Homey saved and tested.",
-    "targetMissing": "No API key of this Homey yet: creating (variables, flows, …) will fail with “Missing Scopes”."
+    "targetMissing": "No API key of this Homey yet: creating (variables, flows, …) will fail with “Missing Scopes”.",
+    "installFallback": "The app's page in the App Store opens now: install it there on this Homey."
   },
   "copy": "copy"
 }
