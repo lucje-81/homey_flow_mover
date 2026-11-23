@@ -57,7 +57,7 @@
     "issue_device": "Toestel niet gekoppeld: {name}",
     "issue_app": "App niet geïnstalleerd op deze Homey: {name}",
     "issue_card": "Kaart bestaat niet op deze Homey: {name}",
-    "issue_zone": "Zone niet gevonden: {name}",
+    "issue_zone": "Zone bestaat hier nog niet: {name} (maak de zones aan in stap 4)",
     "issue_user": "Gebruiker niet gevonden: {name}",
     "issue_otherApp": "{name} is gekoppeld aan een toestel van een andere app",
     "issue_variable": "Variabele “{name}” wordt aangemaakt",
@@ -180,7 +180,8 @@
     "allTargets": "Alle toestellen",
     "allDevices": "Ook toestellen tonen die niet in flows staan ({n}) — telt mee voor Kamers en zones",
     "how_values": "gekoppeld op naam + dezelfde actuele waarden",
-    "diag": "Diagnose (voor ondersteuning)"
+    "diag": "Diagnose (voor ondersteuning)",
+    "issue_otherApps": "Via een andere app (bv. Homey Link): {names}"
   },
   "copy": "kopie"
 }

@@ -1,4 +1,8 @@
 {
+  "1.13.3": {
+    "en": "Zone cards no longer reported separately; clearer zone message; devices via another app on one line",
+    "nl": "Zonekaarten niet meer apart gemeld; duidelijkere zonemelding; toestellen via een andere app op één regel"
+  },
   "1.13.2": {
     "en": "Card check: no false 'card does not exist' for standard device cards (on/off, …)",
     "nl": "Kaartcontrole: geen onterechte 'kaart bestaat niet' meer voor standaard toestelkaarten (aan/uit, …)"

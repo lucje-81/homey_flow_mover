@@ -396,7 +396,13 @@
           var st = statusOf(f);
           var lines = (f.exists ? ['<li>' + esc(t('exists')) + '</li>'] : [])
             .concat(f.issues.map(function (i) { return '<li class="e">' + esc(issueText(i)) + '</li>'; }))
-            .concat(f.notes.map(function (i) { return '<li class="w">' + esc(issueText(i)) + '</li>'; }));
+            .concat((function () {
+              // One line for all devices that are here through another app (e.g. Homey Link)
+              var other = f.notes.filter(function (i) { return i.kind === 'otherApp'; });
+              var rest = f.notes.filter(function (i) { return i.kind !== 'otherApp'; }).map(function (i) { return '<li class="w">' + esc(issueText(i)) + '</li>'; });
+              if (other.length) rest.push('<li class="w">' + esc(t('issue_otherApps', { names: other.map(function (i) { return i.name; }).join(', ') })) + '</li>');
+              return rest;
+            })());
           return '<div class="flow"><div class="top"><input type="checkbox" data-flow="' + esc(f.id) + '"' + (selected[f.id] ? ' checked' : '') + '>'
             + '<span class="ic ' + st + '">' + { g: '✓', o: '!', r: '✕', s: '=' }[st] + '</span>'
             + '<span class="nm"><b>' + esc(f.name) + '</b>' + (f.kind === 'advanced' ? '<span class="tag">' + esc(t('advanced')) + '</span>' : '')

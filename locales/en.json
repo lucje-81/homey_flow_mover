@@ -57,7 +57,7 @@
     "issue_device": "Device not matched: {name}",
     "issue_app": "App not installed on this Homey: {name}",
     "issue_card": "Card does not exist on this Homey: {name}",
-    "issue_zone": "Zone not found: {name}",
+    "issue_zone": "Zone does not exist here yet: {name} (create the zones in step 4)",
     "issue_user": "User not found: {name}",
     "issue_otherApp": "{name} is matched to a device of another app",
     "issue_variable": "Variable “{name}” will be created",
@@ -180,7 +180,8 @@
     "allTargets": "All devices",
     "allDevices": "Also show devices not used in flows ({n}) — they count for Rooms and zones",
     "how_values": "matched by name + the same current values",
-    "diag": "Diagnostics (for support)"
+    "diag": "Diagnostics (for support)",
+    "issue_otherApps": "Through another app (e.g. Homey Link): {names}"
   },
   "copy": "copy"
 }
