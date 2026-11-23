@@ -78,6 +78,8 @@
     <div class="row"><button id="refresh" class="small" data-t="refresh" style="margin-left:auto"></button></div>
     <h3 data-t="appsTitle"></h3>
     <div id="appList"></div>
+    <h3 data-t="systemTitle"></h3>
+    <div id="systemList"></div>
     <h3 data-t="versionsTitle"></h3>
     <div id="versionList"></div>
     <h3 data-t="varsTitle"></h3>
@@ -215,6 +217,27 @@
         }
         return '<div class="miss"><span class="nm"><b>' + esc(a.name) + '</b><small>' + esc(a.id + (a.channel === 'test' ? ' · test' : '') + ' · ' + where.join(' · ')) + '</small></span>' + act + '</div>';
       }).join('');
+      var sys = data.systemDevices || [];
+      if (!sys.length) $('systemList').innerHTML = '<div class="empty ok">' + esc(t('noSystem')) + '</div>';
+      else {
+        var kinds = [];
+        sys.forEach(function (d) { if (kinds.indexOf(d.kind) < 0) kinds.push(d.kind); });
+        $('systemList').innerHTML = kinds.map(function (k) {
+          var list = sys.filter(function (d) { return d.kind === k; });
+          var label = t('sys_' + k) !== 'settings.sys_' + k && t('sys_' + k) !== 'sys_' + k ? t('sys_' + k) : k;
+          var help = t('sysHelp_' + k) !== 'settings.sysHelp_' + k && t('sysHelp_' + k) !== 'sysHelp_' + k ? t('sysHelp_' + k) : t('sysHelp_other');
+          return '<div style="margin:6px 0 10px"><b>' + esc(label) + '</b> (' + list.length + ')<div class="hint" style="margin:2px 0 4px">' + esc(help) + '</div>'
+            + list.map(function (d) {
+              var info = [d.zone, d.flows ? t('usedIn', { n: d.flows }) : t('notUsed')];
+              if (k === 'group') info.push(t('groupMembers', { found: d.membersFound, total: d.members }));
+              return k === 'group'
+                ? '<label class="miss"><input type="checkbox" data-group="' + esc(d.id) + '"' + (d.membersFound ? ' checked' : ' disabled') + '><span class="nm"><b>' + esc(d.name) + '</b><small>' + esc(info.filter(Boolean).join(' · ')) + '</small></span></label>'
+                : '<div class="miss"><span class="nm"><b>' + esc(d.name) + '</b><small>' + esc(info.filter(Boolean).join(' · ')) + '</small></span></div>';
+            }).join('')
+            + (k === 'group' ? '<div class="row" style="margin-top:6px"><button id="createGroups" class="small primary">' + esc(t('createGroups')) + '</button><span class="status" id="groupStatus"></span></div>' : '')
+            + '</div>';
+        }).join('');
+      }
       var vers = data.appVersions || [];
       var older = vers.filter(function (v) { return v.older; });
       var newer = vers.filter(function (v) { return !v.older; });
@@ -432,6 +455,18 @@
         if (H.openURL) H.openURL(url); else window.open(url, '_blank');
       }
       $('versionList').addEventListener('click', openStore);
+      $('systemList').addEventListener('click', function (e) {
+        if (e.target.id !== 'createGroups') return;
+        var ids = [].slice.call(document.querySelectorAll('[data-group]:checked')).map(function (x) { return x.getAttribute('data-group'); });
+        if (!ids.length) return;
+        e.target.disabled = true;
+        $('groupStatus').textContent = t('creating');
+        api('POST', '/groups', { ids: ids }).then(function (res) {
+          var bad = res.filter(function (r) { return !r.ok; });
+          if (bad.length) H.alert(bad.map(function (r) { return r.name + ': ' + r.error; }).join('\n'));
+          return analyse();
+        }).catch(function (er) { H.alert(er.message || String(er)); e.target.disabled = false; });
+      });
       $('refresh').addEventListener('click', function () { api('POST', '/refresh').then(analyse); });
       $('appList').addEventListener('click', openStore);
       $('varList').addEventListener('click', function (e) {

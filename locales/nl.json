@@ -5,7 +5,8 @@
     "flowRefs": "Kaarten die andere flows starten konden niet bijgewerkt worden",
     "appSettings": "De API-sleutel mag de instellingen van apps niet lezen. Maak een sleutel aan met het recht Apps (niet alleen lezen) en verbind opnieuw.",
     "favorites": "De API-sleutel mag je gebruikersgegevens (favorieten) niet lezen. Maak een sleutel aan met het recht Gebruikers en verbind opnieuw.",
-    "widgetImport": "Werk Compacte widgets bij naar versie 0.11 of nieuwer en probeer opnieuw"
+    "widgetImport": "Werk Compacte widgets bij naar versie 0.11 of nieuwer en probeer opnieuw",
+    "groupMembers": "Geen van de leden is op deze Homey gekoppeld. Voeg de toestellen eerst toe (of via Homey Link)."
   },
   "settings": {
     "title": "Flow-verhuizer",
@@ -72,7 +73,7 @@
     "created": "aangemaakt",
     "skipped": "overgeslagen (bestaat al)",
     "stepMissing": "Wat ontbreekt er op deze Homey?",
-    "stepMissingHint": "De apps en variabelen van de andere Homey die je flows nodig hebben, maar die hier nog niet zijn, en apps die hier een oudere versie hebben (dan kunnen flowkaarten ontbreken). Installeer of werk ze eerst bij: “Open in App Store” opent de pagina van de app, klik daar op Installeren en kies deze Homey. Daarna op Opnieuw verbinden (stap 1) om de lijst te vernieuwen. Na het installeren van een app voeg je de toestellen ervan nog zelf toe; daarna worden ze in stap 3 automatisch gekoppeld.",
+    "stepMissingHint": "De apps en variabelen van de andere Homey die je flows nodig hebben, maar die hier nog niet zijn, en apps die hier een oudere versie hebben (dan kunnen flowkaarten ontbreken). Installeer of werk ze eerst bij: “Open in App Store” opent de pagina van de app, klik daar op Installeren en kies deze Homey. Klik daarna op Vernieuwen. Na het installeren van een app voeg je de toestellen ervan nog zelf toe; daarna worden ze in stap 3 automatisch gekoppeld.",
     "appsTitle": "Apps",
     "varsTitle": "Variabelen",
     "noMissingApps": "Alle apps die je flows gebruiken zijn op deze Homey geïnstalleerd.",
@@ -128,7 +129,18 @@
     "cliUpdate": "Zelf geïnstalleerd: werk bij vanaf je pc in de map van de app met",
     "versionsNewer": "Hier nieuwer dan op de andere Homey (geen probleem):",
     "openStore": "Open in App Store",
-    "refresh": "Vernieuwen"
+    "refresh": "Vernieuwen",
+    "systemTitle": "Ingebouwde toesteltypes van Homey",
+    "noSystem": "Geen groepen, Matter- of andere ingebouwde toestellen die nog ontbreken.",
+    "sys_group": "Toestelgroepen",
+    "sysHelp_group": "Kunnen hier nagebouwd worden met dezelfde naam, soort, zone en icoon, en met de leden die al gekoppeld zijn (doe dit nadat de leden er zijn). Daarna worden ze in stap 3 automatisch gekoppeld.",
+    "sys_matter": "Matter-toestellen",
+    "sysHelp_matter": "Matter-toestellen kunnen aan meerdere beheerders gekoppeld worden: deel ze vanuit de Pro (of de app van de fabrikant) met deze Homey, of haal ze binnen via Homey Link. Geef ze dezelfde naam.",
+    "sys_virtualsocket": "Virtuele stopcontacten",
+    "sysHelp_virtualsocket": "Ingebouwde toestellen van Homey: maak ze hier opnieuw aan met dezelfde naam, of haal ze binnen via Homey Link.",
+    "sysHelp_other": "Ingebouwd toesteltype van Homey (geen app): voeg het hier opnieuw toe met dezelfde naam, of haal het binnen via Homey Link.",
+    "groupMembers": "{found} van {total} leden gekoppeld",
+    "createGroups": "Aangevinkte groepen aanmaken"
   },
   "copy": "kopie"
 }

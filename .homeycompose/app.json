@@ -1,6 +1,6 @@
 {
   "id": "flow.mover",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -97,6 +97,10 @@
     "refresh": {
       "method": "POST",
       "path": "/refresh"
+    },
+    "createGroups": {
+      "method": "POST",
+      "path": "/groups"
     }
   }
 }

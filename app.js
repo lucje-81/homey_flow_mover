@@ -88,7 +88,15 @@ class FlowMoverApp extends Homey.App {
     ]);
     const byId = (obj, pick) => Object.fromEntries(Object.values(obj || {}).map((x) => [String(x.id).toLowerCase(), pick(x)]));
     const data = {
-      devices: byId(devices, (d) => ({ id: String(d.id).toLowerCase(), name: d.name, zone: d.zone, driverId: d.driverId || d.driverUri, ownerUri: d.ownerUri })),
+      devices: byId(devices, (d) => {
+        const out = { id: String(d.id).toLowerCase(), name: d.name, zone: d.zone, driverId: d.driverId || d.driverUri, ownerUri: d.ownerUri, class: d.class };
+        // Groups: keep what is needed to rebuild them (members are found in data/settings)
+        if (M.systemDriver(out) === 'group') {
+          out.iconOverride = d.iconOverride || null;
+          out.members = [...M.collectUuids([d.data, d.settings, d.settingsObj, d.group, d.deviceIds])].filter((u) => u !== out.id);
+        }
+        return out;
+      }),
       zones: byId(zones, (z) => ({ id: z.id, name: z.name, parent: z.parent || null, icon: z.icon || 'default' })),
       folders: byId(folders, (f) => ({ id: f.id, name: f.name, parent: f.parent || null })),
       variables: byId(variables, (v) => ({ id: v.id, name: v.name, type: v.type, value: v.value })),
@@ -161,6 +169,7 @@ class FlowMoverApp extends Homey.App {
       missingApps: this.missingApps(ctx, flows), missingVariables: this.missingVariables(ctx), zones: this.zonePlan(ctx),
       dashboards: this.analyseDashboards(ctx),
       appVersions: this.appVersions(ctx),
+      systemDevices: this.systemDevices(ctx),
       widgetApp: ctx.dstApps ? ctx.dstApps.has(WIDGET_APP) && !!(ctx.src.apps && ctx.src.apps.has(WIDGET_APP)) : false,
     };
   }
@@ -382,7 +391,7 @@ class FlowMoverApp extends Homey.App {
         M.collectApps(body).forEach((a) => add(a, f.id));
         M.collectUuids(body).forEach((u) => {
           const d = ctx.src.devices[u];
-          if (d && !(ctx.deviceMatch[u] && ctx.deviceMatch[u].target)) add(M.deviceApp(d), f.id, u);
+          if (d && !(ctx.deviceMatch[u] && ctx.deviceMatch[u].target) && M.deviceApp(d)) add(M.deviceApp(d), f.id, u);
         });
       }
     }
@@ -403,7 +412,7 @@ class FlowMoverApp extends Homey.App {
       for (const f of list) {
         const body = kind === 'advanced' ? f.cards : [f.trigger, f.conditions, f.actions];
         const apps = M.collectApps(body);
-        M.collectUuids(body).forEach((u) => { if (ctx.src.devices[u]) apps.add(M.deviceApp(ctx.src.devices[u])); });
+        M.collectUuids(body).forEach((u) => { const app = ctx.src.devices[u] && M.deviceApp(ctx.src.devices[u]); if (app) apps.add(app); });
         apps.forEach((a) => { used[a] = (used[a] || 0) + 1; });
       }
     }
@@ -419,6 +428,55 @@ class FlowMoverApp extends Homey.App {
       });
     }
     return out.sort((a, b) => (b.older - a.older) || (b.flows - a.flows) || a.name.localeCompare(b.name));
+  }
+
+  /** Devices of Homey's own types (groups, Matter, …) that have no match here. */
+  systemDevices(ctx) {
+    const usage = {};
+    for (const [kind, list] of [['flow', ctx.src.flows], ['advanced', ctx.src.advanced]]) {
+      for (const f of list) {
+        M.collectUuids(kind === 'advanced' ? f.cards : [f.trigger, f.conditions, f.actions]).forEach((u) => { usage[u] = (usage[u] || 0) + 1; });
+      }
+    }
+    const zoneName = (id) => M.zonePath(ctx.src.zones, id).join(' / ');
+    const out = [];
+    for (const d of Object.values(ctx.src.devices)) {
+      const kind = M.systemDriver(d);
+      if (!kind || (ctx.deviceMatch[d.id] && ctx.deviceMatch[d.id].target)) continue;
+      const item = { id: d.id, name: d.name, kind, zone: zoneName(d.zone), flows: usage[d.id] || 0 };
+      if (kind === 'group') {
+        item.members = (d.members || []).filter((u) => ctx.src.devices[u]).length;
+        item.membersFound = (d.members || []).filter((u) => ctx.src.devices[u] && ctx.deviceMatch[u] && ctx.deviceMatch[u].target).length;
+      }
+      out.push(item);
+    }
+    return out.sort((a, b) => a.kind.localeCompare(b.kind) || b.flows - a.flows || a.name.localeCompare(b.name));
+  }
+
+  /** Rebuild device groups of the other Homey here: same name, class, zone, icon and the matched members. */
+  async createGroups({ ids }) {
+    this.cache = {};
+    const ctx = await this.context();
+    const srcRoot = M.rootZone(ctx.src.zones);
+    const dstRoot = M.rootZone(ctx.dst.zones);
+    const results = [];
+    for (const raw of ids || []) {
+      const g = ctx.src.devices[String(raw).toLowerCase()];
+      if (!g || M.systemDriver(g) !== 'group') continue;
+      const members = (g.members || []).map((u) => ctx.deviceMatch[u] && ctx.deviceMatch[u].target).filter(Boolean);
+      if (!members.length) { results.push({ type: 'group', name: g.name, ok: false, error: this.homey.__('errors.groupMembers') }); continue; }
+      const zoneId = ctx.zoneMap[String(g.zone).toLowerCase()] || (srcRoot && dstRoot && String(g.zone).toLowerCase() === String(srcRoot.id).toLowerCase() ? dstRoot.id : (dstRoot && dstRoot.id));
+      const body = { name: g.name, class: g.class || 'other', zoneId, deviceIds: members };
+      if (g.iconOverride) body.iconOverride = g.iconOverride;
+      try {
+        await this.target.devices.createGroup({ group: body });
+        results.push({ type: 'group', name: g.name, ok: true, members: members.length, of: (g.members || []).length });
+      } catch (err) {
+        results.push({ type: 'group', name: g.name, ok: false, error: err.message });
+      }
+    }
+    this.cache = {};
+    return results;
   }
 
   /** Variables of the other Homey that don't exist here (same name and type). */

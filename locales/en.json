@@ -5,7 +5,8 @@
     "flowRefs": "Cards that start other flows could not be updated",
     "appSettings": "The API key may not read app settings. Create a key with the Apps permission (not read only) and connect again.",
     "favorites": "The API key may not read your user data (favorites). Create a key with the Users permission and connect again.",
-    "widgetImport": "Update Compact Widgets to version 0.11 or newer and try again"
+    "widgetImport": "Update Compact Widgets to version 0.11 or newer and try again",
+    "groupMembers": "None of the members is matched on this Homey. Add the devices first (or via Homey Link)."
   },
   "settings": {
     "title": "Flow Mover",
@@ -72,7 +73,7 @@
     "created": "created",
     "skipped": "skipped (exists)",
     "stepMissing": "What is missing on this Homey?",
-    "stepMissingHint": "The apps and variables of the other Homey that your flows need but that are not here yet, and apps that have an older version here (flow cards may then be missing). Install or update them first: “Open in App Store” opens the app's page, click Install there and choose this Homey. Then click Connect (step 1) again to refresh the list. After installing an app, add its devices yourself; step 3 then matches them automatically.",
+    "stepMissingHint": "The apps and variables of the other Homey that your flows need but that are not here yet, and apps that have an older version here (flow cards may then be missing). Install or update them first: “Open in App Store” opens the app's page, click Install there and choose this Homey. Then click Refresh. After installing an app, add its devices yourself; step 3 then matches them automatically.",
     "appsTitle": "Apps",
     "varsTitle": "Variables",
     "noMissingApps": "All apps your flows use are installed on this Homey.",
@@ -128,7 +129,18 @@
     "cliUpdate": "Installed by yourself: update from your PC in the app's folder with",
     "versionsNewer": "Newer here than on the other Homey (no problem):",
     "openStore": "Open in App Store",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "systemTitle": "Homey's built-in device types",
+    "noSystem": "No groups, Matter or other built-in devices missing.",
+    "sys_group": "Device groups",
+    "sysHelp_group": "Can be rebuilt here with the same name, class, zone and icon and the members that are already matched (do this after the members exist). Step 3 then matches them automatically.",
+    "sys_matter": "Matter devices",
+    "sysHelp_matter": "Matter devices can be shared with several controllers: share them from the Pro (or the manufacturer's app) with this Homey, or bring them in with Homey Link. Give them the same name.",
+    "sys_virtualsocket": "Virtual sockets",
+    "sysHelp_virtualsocket": "Homey's built-in devices: create them again here with the same name, or bring them in with Homey Link.",
+    "sysHelp_other": "Homey's built-in device type (not an app): add it again here with the same name, or bring it in with Homey Link.",
+    "groupMembers": "{found} of {total} members matched",
+    "createGroups": "Create ticked groups"
   },
   "copy": "copy"
 }

@@ -1,4 +1,8 @@
 {
+  "1.7.0": {
+    "en": "Homey's own device types (groups, Matter, virtual sockets) are no longer shown as apps; device groups can be rebuilt",
+    "nl": "Ingebouwde toesteltypes van Homey (groepen, Matter, virtuele stopcontacten) staan niet meer bij de apps; toestelgroepen kunnen nagebouwd worden"
+  },
   "1.6.0": {
     "en": "App Store link instead of installing (Homey does not allow apps to install apps), Refresh button, Compact Widgets settings via its import endpoint",
     "nl": "Link naar de App Store in plaats van installeren (Homey laat niet toe dat apps apps installeren), knop Vernieuwen, instellingen van Compacte widgets via hun importfunctie"
