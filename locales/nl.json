@@ -151,7 +151,8 @@
     "save": "Bewaren",
     "targetOk": "API-sleutel van deze Homey bewaard en getest.",
     "targetMissing": "Nog geen API-sleutel van deze Homey: aanmaken (variabelen, flows, …) zal mislukken met “Missing Scopes”.",
-    "installFallback": "De pagina van de app in de App Store wordt nu geopend: installeer ze daar op deze Homey."
+    "installFallback": "De pagina van de app in de App Store wordt nu geopend: installeer ze daar op deze Homey.",
+    "notOnSource": "Staat ook niet op de andere Homey: de app is daar verwijderd, maar deze flow(s) gebruiken hem nog en zijn daar dus al kapot: {flows}. Kijk of je ze nog nodig hebt; anders laat je ze weg bij het overzetten."
   },
   "copy": "kopie"
 }

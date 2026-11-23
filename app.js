@@ -435,11 +435,15 @@ class FlowMoverApp extends Homey.App {
         });
       }
     }
+    const flowName = (fid) => (ctx.src.flowsById[String(fid).toLowerCase()] || {}).name || fid;
     return Object.entries(used).map(([id, u]) => {
       const info = ctx.src.appInfo[id] || {};
       return {
         id, name: info.name || id, origin: info.origin || null, channel: info.channel || 'live', version: info.version || '',
         flows: u.flows.size, devices: u.devices.size,
+        // Used in a flow but not installed on the other Homey either: that flow is already broken there
+        notOnSource: !!(ctx.src.apps && !ctx.src.apps.has(id)),
+        flowNames: [...u.flows].map(flowName).slice(0, 5),
       };
     }).sort((a, b) => b.flows - a.flows || a.name.localeCompare(b.name));
   }

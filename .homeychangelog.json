@@ -1,4 +1,8 @@
 {
+  "1.9.1": {
+    "en": "Apps used in flows but not installed on the other Homey either are shown as such, with the flows that use them",
+    "nl": "Apps die in flows gebruikt worden maar ook op de andere Homey niet meer staan, worden als dusdanig getoond, met de flows die ze gebruiken"
+  },
   "1.9.0": {
     "en": "Install and update App Store apps directly with the API key of this Homey (App Store page as fallback)",
     "nl": "App Store-apps rechtstreeks installeren en bijwerken met de API-sleutel van deze Homey (App Store-pagina als terugval)"

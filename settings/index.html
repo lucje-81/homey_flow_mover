@@ -219,7 +219,9 @@
         var where = [t('usedIn', { n: a.flows })];
         if (a.devices) where.push(t('devicesCount', { n: a.devices }));
         var act;
-        if (a.origin === 'appstore') {
+        if (a.notOnSource) {
+          act = '<small class="act warn" style="flex-basis:100%">' + esc(t('notOnSource', { flows: a.flowNames.join(', ') })) + '</small>';
+        } else if (a.origin === 'appstore') {
           act = '<button class="small primary act" data-store="' + esc(a.id) + '" data-channel="' + esc(a.channel) + '">' + esc(t(hasTarget ? 'install' : 'openStore')) + '</button>';
         } else {
           act = '<small class="act warn" style="flex-basis:100%">' + esc(t('cliApp')) + ' <code>homey app install</code></small>';

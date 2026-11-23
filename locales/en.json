@@ -151,7 +151,8 @@
     "save": "Save",
     "targetOk": "API key of this Homey saved and tested.",
     "targetMissing": "No API key of this Homey yet: creating (variables, flows, …) will fail with “Missing Scopes”.",
-    "installFallback": "The app's page in the App Store opens now: install it there on this Homey."
+    "installFallback": "The app's page in the App Store opens now: install it there on this Homey.",
+    "notOnSource": "Not installed on the other Homey either: the app was removed there, but these flow(s) still use it and are already broken there: {flows}. Check if you still need them; otherwise leave them out when moving."
   },
   "copy": "copy"
 }
