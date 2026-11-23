@@ -44,6 +44,13 @@
     .flow li.e { color: #b00020; } .flow li.w { color: #8a5a00; }
     .bar { position: sticky; bottom: 0; background: #fff; padding: 10px 0 4px; border-top: 1px solid #eee; }
     .result li { font-size: 13px; }
+    h3 { font-size: 14px; margin: 12px 0 4px; }
+    .miss { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 7px 0; border-bottom: 1px solid #f0f0f0; }
+    .miss .nm { flex: 1 1 180px; min-width: 0; }
+    .miss .nm b { display: block; }
+    .miss .nm small { display: block; color: #888; font-size: 12px; }
+    .miss code { font-size: 12px; background: #f4f4f4; padding: 1px 5px; border-radius: 4px; }
+    .miss .act { margin-left: auto; }
     .empty { padding: 14px; text-align: center; color: #777; border: 1px dashed #ccc; border-radius: 8px; font-size: 13px; }
     .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
     .filters button.sel { background: #2f6fde; border-color: #2f6fde; color: #fff; }
@@ -65,8 +72,17 @@
     <div class="status" id="connStatus"></div>
   </div>
 
+  <div class="card off" id="stepMissing">
+    <h2><span class="n">2</span><span data-t="stepMissing"></span></h2>
+    <p class="hint" data-t="stepMissingHint"></p>
+    <h3 data-t="appsTitle"></h3>
+    <div id="appList"></div>
+    <h3 data-t="varsTitle"></h3>
+    <div id="varList"></div>
+  </div>
+
   <div class="card off" id="step2">
-    <h2><span class="n">2</span><span data-t="step2"></span></h2>
+    <h2><span class="n">3</span><span data-t="step2"></span></h2>
     <p class="hint" data-t="step2Hint"></p>
     <div class="row">
       <label class="chk"><input id="onlyMissing" type="checkbox"> <span data-t="onlyMissing"></span></label>
@@ -76,7 +92,7 @@
   </div>
 
   <div class="card off" id="step3">
-    <h2><span class="n">3</span><span data-t="step3"></span></h2>
+    <h2><span class="n">4</span><span data-t="step3"></span></h2>
     <p class="hint" data-t="step3Hint"></p>
     <div class="row"><input id="search" type="search" style="flex:1"></div>
     <div class="filters" id="filters"></div>
@@ -144,6 +160,8 @@
       return api('GET', '/analysis').then(function (r) {
         data = r;
         $('step2').classList.remove('off');
+        $('stepMissing').classList.remove('off');
+        renderMissing();
         $('step3').classList.remove('off');
         var keep = {};
         data.flows.forEach(function (f) { if (selected[f.id]) keep[f.id] = true; });
@@ -153,6 +171,27 @@
       }).catch(function (err) {
         $('flowList').innerHTML = '<div class="empty err">' + esc(err.message || err) + '</div>';
       });
+    }
+
+    // ---- missing apps and variables
+    function renderMissing() {
+      var apps = data.missingApps || [];
+      $('appList').innerHTML = !apps.length ? '<div class="empty ok">' + esc(t('noMissingApps')) + '</div>' : apps.map(function (a) {
+        var where = [t('usedIn', { n: a.flows })];
+        if (a.devices) where.push(t('devicesCount', { n: a.devices }));
+        var act;
+        if (a.origin === 'appstore') {
+          act = '<button class="small primary act" data-install="' + esc(a.id) + '" data-channel="' + esc(a.channel) + '">' + esc(t('install')) + '</button>';
+        } else {
+          act = '<small class="act warn" style="flex-basis:100%">' + esc(t('cliApp')) + ' <code>homey app install</code></small>';
+        }
+        return '<div class="miss"><span class="nm"><b>' + esc(a.name) + '</b><small>' + esc(a.id + (a.channel === 'test' ? ' · test' : '') + ' · ' + where.join(' · ')) + '</small></span>' + act + '</div>';
+      }).join('');
+      var vars = data.missingVariables || [];
+      $('varList').innerHTML = !vars.length ? '<div class="empty ok">' + esc(t('noMissingVars')) + '</div>' : vars.map(function (v) {
+        return '<label class="miss"><input type="checkbox" data-var="' + esc(v.id) + '"' + (v.flows ? ' checked' : '') + '><span class="nm"><b>' + esc(v.name) + '</b><small>'
+          + esc(t('type_' + v.type) + ' · ' + t('value') + ': ' + (v.value === '' || v.value == null ? '–' : v.type === 'boolean' ? t(v.value ? 'yes' : 'no') : String(v.value)) + ' · ' + (v.flows ? t('usedIn', { n: v.flows }) : t('notUsed'))) + '</small></span></label>';
+      }).join('') + '<div class="row" style="margin-top:8px"><button id="createVars" class="small primary">' + esc(t('createVars')) + '</button><span class="status" id="varStatus"></span></div>';
     }
 
     // ---- step 2
@@ -251,6 +290,27 @@
       $('search').placeholder = t('search');
       $('keySteps').innerHTML = [1, 2, 3, 4].map(function (i) { return '<li>' + esc(t('key' + i)) + '</li>'; }).join('');
       $('connect').addEventListener('click', connect);
+      $('appList').addEventListener('click', function (e) {
+        var b = e.target.closest('[data-install]');
+        if (!b) return;
+        b.disabled = true;
+        b.textContent = t('installing');
+        api('POST', '/install-app', { id: b.getAttribute('data-install'), channel: b.getAttribute('data-channel') })
+          .then(analyse)
+          .catch(function (err) { b.disabled = false; b.textContent = t('install'); H.alert(t('installFailed') + ' ' + (err.message || err)); });
+      });
+      $('varList').addEventListener('click', function (e) {
+        if (e.target.id !== 'createVars') return;
+        var ids = [].slice.call(document.querySelectorAll('[data-var]:checked')).map(function (x) { return x.getAttribute('data-var'); });
+        if (!ids.length) return;
+        e.target.disabled = true;
+        $('varStatus').textContent = t('creating');
+        api('POST', '/create-variables', { ids: ids }).then(function (res) {
+          var bad = res.filter(function (r) { return !r.ok; });
+          if (bad.length) H.alert(bad.map(function (r) { return r.name + ': ' + r.error; }).join('\n'));
+          return analyse();
+        }).catch(function (err) { H.alert(err.message || String(err)); e.target.disabled = false; });
+      });
       $('onlyMissing').addEventListener('change', renderDevices);
       $('search').addEventListener('input', renderFlows);
       $('migrate').addEventListener('click', migrate);

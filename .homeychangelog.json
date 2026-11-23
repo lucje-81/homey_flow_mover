@@ -1,4 +1,8 @@
 {
+  "1.1.0": {
+    "en": "Overview of missing apps (install App Store apps with one button) and variables (create them with one button)",
+    "nl": "Overzicht van ontbrekende apps (App Store-apps met één knop installeren) en variabelen (met één knop aanmaken)"
+  },
   "1.0.0": {
     "en": "First version: copy flows and advanced flows from another Homey with automatic device and variable matching",
     "nl": "Eerste versie: flows en geavanceerde flows kopiëren van een andere Homey met automatische koppeling van toestellen en variabelen"

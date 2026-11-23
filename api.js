@@ -21,6 +21,14 @@ module.exports = {
     return homey.app.resetDeviceMap();
   },
 
+  async installApp({ homey, body }) {
+    return homey.app.installApp(body || {});
+  },
+
+  async createVariables({ homey, body }) {
+    return homey.app.createVariables(body || {});
+  },
+
   async migrate({ homey, body }) {
     return homey.app.migrate(body || {});
   },

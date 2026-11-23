@@ -67,6 +67,26 @@
     "migrating": "Bezig met overzetten…",
     "done": "Klaar: {ok} flow(s) aangemaakt, {failed} mislukt.",
     "created": "aangemaakt",
-    "skipped": "overgeslagen (bestaat al)"
+    "skipped": "overgeslagen (bestaat al)",
+    "stepMissing": "Wat ontbreekt er op deze Homey?",
+    "stepMissingHint": "De apps en variabelen van de andere Homey die je flows nodig hebben, maar die hier nog niet zijn. Installeer ze eerst, dan komen de flows volledig over. Na het installeren van een app voeg je de toestellen ervan nog zelf toe; daarna worden ze in stap 3 automatisch gekoppeld.",
+    "appsTitle": "Apps",
+    "varsTitle": "Variabelen",
+    "noMissingApps": "Alle apps die je flows gebruiken zijn op deze Homey geïnstalleerd.",
+    "noMissingVars": "Alle variabelen bestaan al op deze Homey.",
+    "devicesCount": "{n} toestel(len) niet gekoppeld",
+    "install": "Installeren",
+    "installing": "Installeren…",
+    "installFailed": "Installeren mislukt:",
+    "cliApp": "Zelf geïnstalleerd (niet uit de App Store). Installeer ze vanaf je pc in de map van de app met",
+    "notUsed": "niet gebruikt in flows",
+    "type_number": "Getal",
+    "type_string": "Tekst",
+    "type_boolean": "Ja/nee",
+    "value": "waarde",
+    "createVars": "Aangevinkte variabelen aanmaken",
+    "creating": "Aanmaken…",
+    "yes": "ja",
+    "no": "nee"
   }
 }

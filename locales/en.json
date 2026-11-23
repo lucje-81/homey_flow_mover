@@ -67,6 +67,26 @@
     "migrating": "Moving…",
     "done": "Done: {ok} flow(s) created, {failed} failed.",
     "created": "created",
-    "skipped": "skipped (exists)"
+    "skipped": "skipped (exists)",
+    "stepMissing": "What is missing on this Homey?",
+    "stepMissingHint": "The apps and variables of the other Homey that your flows need but that are not here yet. Install them first so the flows come over completely. After installing an app, add its devices yourself; step 3 then matches them automatically.",
+    "appsTitle": "Apps",
+    "varsTitle": "Variables",
+    "noMissingApps": "All apps your flows use are installed on this Homey.",
+    "noMissingVars": "All variables already exist on this Homey.",
+    "devicesCount": "{n} device(s) not matched",
+    "install": "Install",
+    "installing": "Installing…",
+    "installFailed": "Installing failed:",
+    "cliApp": "Installed by yourself (not from the App Store). Install it from your PC in the app's folder with",
+    "notUsed": "not used in flows",
+    "type_number": "Number",
+    "type_string": "Text",
+    "type_boolean": "Yes/no",
+    "value": "value",
+    "createVars": "Create ticked variables",
+    "creating": "Creating…",
+    "yes": "yes",
+    "no": "no"
   }
 }

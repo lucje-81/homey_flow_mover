@@ -92,6 +92,7 @@ class FlowMoverApp extends Homey.App {
       flows: Object.values(flows).map((f) => M.normaliseFlow(M.plain(f), 'flow')),
       advanced: Object.values(advanced).map((f) => M.normaliseFlow(M.plain(f), 'advanced')),
       apps: apps ? new Set(Object.keys(apps)) : null,
+      appInfo: Object.fromEntries(Object.values(apps || {}).map((a) => [a.id, { id: a.id, name: a.name, origin: a.origin, channel: a.channel, version: a.version }])),
       cards: withCards && (triggers || conditions || actions) ? M.cardIdSet(triggers, conditions, actions) : null,
     };
     data.flowsById = {};
@@ -150,7 +151,83 @@ class FlowMoverApp extends Homey.App {
     const targets = Object.values(ctx.dst.devices)
       .map((d) => ({ id: d.id, name: d.name, zone: zoneName(ctx.dst.zones, d.zone), app: M.deviceApp(d) }))
       .sort((a, b) => a.name.localeCompare(b.name));
-    return { flows, devices, targets, cardsChecked: !!(ctx.dstCards && ctx.dstCards.size) };
+    return {
+      flows, devices, targets, cardsChecked: !!(ctx.dstCards && ctx.dstCards.size),
+      missingApps: this.missingApps(ctx, flows), missingVariables: this.missingVariables(ctx),
+    };
+  }
+
+  /** Apps used by the flows (cards or devices) that are not installed on this Homey. */
+  missingApps(ctx, flows) {
+    if (!ctx.dstApps) return [];
+    const used = {};
+    const add = (appId, flowId, deviceId) => {
+      if (!appId || ctx.dstApps.has(appId)) return;
+      used[appId] = used[appId] || { flows: new Set(), devices: new Set() };
+      if (flowId) used[appId].flows.add(flowId);
+      if (deviceId) used[appId].devices.add(deviceId);
+    };
+    for (const [kind, list] of [['flow', ctx.src.flows], ['advanced', ctx.src.advanced]]) {
+      for (const f of list) {
+        const body = kind === 'advanced' ? f.cards : [f.trigger, f.conditions, f.actions];
+        M.collectApps(body).forEach((a) => add(a, f.id));
+        M.collectUuids(body).forEach((u) => {
+          const d = ctx.src.devices[u];
+          if (d && !(ctx.deviceMatch[u] && ctx.deviceMatch[u].target)) add(M.deviceApp(d), f.id, u);
+        });
+      }
+    }
+    return Object.entries(used).map(([id, u]) => {
+      const info = ctx.src.appInfo[id] || {};
+      return {
+        id, name: info.name || id, origin: info.origin || null, channel: info.channel || 'live', version: info.version || '',
+        flows: u.flows.size, devices: u.devices.size,
+      };
+    }).sort((a, b) => b.flows - a.flows || a.name.localeCompare(b.name));
+  }
+
+  /** Variables of the other Homey that don't exist here (same name and type). */
+  missingVariables(ctx) {
+    const usage = {};
+    for (const [kind, list] of [['flow', ctx.src.flows], ['advanced', ctx.src.advanced]]) {
+      for (const f of list) {
+        M.collectUuids(kind === 'advanced' ? f.cards : [f.trigger, f.conditions, f.actions]).forEach((u) => {
+          if (ctx.src.variables[u]) usage[u] = (usage[u] || 0) + 1;
+        });
+      }
+    }
+    return Object.values(ctx.src.variables)
+      .filter((v) => !ctx.varMap[String(v.id).toLowerCase()])
+      .map((v) => ({ id: String(v.id).toLowerCase(), name: v.name, type: v.type, value: v.value, flows: usage[String(v.id).toLowerCase()] || 0 }))
+      .sort((a, b) => (b.flows > 0) - (a.flows > 0) || a.name.localeCompare(b.name));
+  }
+
+  /** Install an app from the Homey App Store on this Homey (same channel as on the other Homey). */
+  async installApp({ id, channel }) {
+    if (!id || !/^[a-z0-9._-]+$/i.test(id)) throw new Error('Invalid app id');
+    await this.target.apps.installFromAppStore({ id, channel: channel === 'test' ? 'test' : 'live', waitForInstall: true });
+    this.cache = {};
+    return true;
+  }
+
+  /** Create variables of the other Homey here (same name, type and current value). */
+  async createVariables({ ids }) {
+    const ctx = await this.context();
+    const results = [];
+    for (const raw of ids || []) {
+      const u = String(raw).toLowerCase();
+      const v = ctx.src.variables[u];
+      if (!v || ctx.varMap[u]) continue;
+      try {
+        const created = await this.target.logic.createVariable({ variable: { name: v.name, type: v.type, value: v.value } });
+        ctx.varMap[u] = created.id;
+        results.push({ type: 'variable', name: v.name, ok: true, id: created.id, srcId: u });
+      } catch (err) {
+        results.push({ type: 'variable', name: v.name, ok: false, error: err.message });
+      }
+    }
+    this.cache = {};
+    return results;
   }
 
   async setDeviceMap({ srcId, dstId }) {
@@ -204,15 +281,10 @@ class FlowMoverApp extends Homey.App {
           if (ctx.src.variables[u] && !ctx.varMap[u]) needed.add(u);
         }
       }
-      for (const u of needed) {
-        const v = ctx.src.variables[u];
-        try {
-          const created = await this.target.logic.createVariable({ variable: { name: v.name, type: v.type, value: v.value } });
-          ctx.varMap[u] = created.id;
-          ctx.idMap[u] = created.id;
-          results.push({ type: 'variable', name: v.name, ok: true });
-        } catch (err) {
-          results.push({ type: 'variable', name: v.name, ok: false, error: err.message });
+      if (needed.size) {
+        for (const r of await this.createVariables({ ids: [...needed] })) {
+          if (r.ok) { ctx.varMap[r.srcId] = r.id; ctx.idMap[r.srcId] = r.id; }
+          results.push({ type: 'variable', name: r.name, ok: r.ok, error: r.error });
         }
       }
     }
