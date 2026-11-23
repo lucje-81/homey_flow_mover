@@ -206,7 +206,7 @@ class FlowMoverApp extends Homey.App {
       .sort((a, b) => a.name.localeCompare(b.name));
     return {
       flows, devices, targets, cardsChecked: !!(ctx.dstCards && ctx.dstCards.size),
-      missingApps: this.missingApps(ctx, flows), missingVariables: this.missingVariables(ctx), zones: this.zonePlan(ctx),
+      missingApps: this.missingApps(ctx), missingVariables: this.missingVariables(ctx), zones: this.zonePlan(ctx),
       dashboards: this.analyseDashboards(ctx),
       appVersions: this.appVersions(ctx),
       systemDevices: this.systemDevices(ctx),
@@ -415,37 +415,54 @@ class FlowMoverApp extends Homey.App {
     return out;
   }
 
-  /** Apps used by the flows (cards or devices) that are not installed on this Homey. */
-  missingApps(ctx, flows) {
+  /**
+   * All apps of the other Homey that are not installed here, plus apps used in flows that are missing on both.
+   * Per app: in how many flows and dashboards it is used, how many devices it has there and how many of those
+   * are already here through another app (e.g. Homey Link).
+   */
+  missingApps(ctx) {
     if (!ctx.dstApps) return [];
-    const used = {};
-    const add = (appId, flowId, deviceId) => {
-      if (!appId || ctx.dstApps.has(appId)) return;
-      used[appId] = used[appId] || { flows: new Set(), devices: new Set() };
-      if (flowId) used[appId].flows.add(flowId);
-      if (deviceId) used[appId].devices.add(deviceId);
+    const info = {};
+    const get = (id) => {
+      info[id] = info[id] || { flows: new Set(), dashboards: new Set(), devices: 0, linked: 0, unmatched: 0 };
+      return info[id];
     };
     for (const [kind, list] of [['flow', ctx.src.flows], ['advanced', ctx.src.advanced]]) {
       for (const f of list) {
         const body = kind === 'advanced' ? f.cards : [f.trigger, f.conditions, f.actions];
-        M.collectApps(body).forEach((a) => add(a, f.id));
-        M.collectUuids(body).forEach((u) => {
-          const d = ctx.src.devices[u];
-          if (d && !(ctx.deviceMatch[u] && ctx.deviceMatch[u].target) && M.deviceApp(d)) add(M.deviceApp(d), f.id, u);
-        });
+        M.collectApps(body).forEach((a) => get(a).flows.add(f.id));
+        M.collectUuids(body).forEach((u) => { const a = ctx.src.devices[u] && M.deviceApp(ctx.src.devices[u]); if (a) get(a).flows.add(f.id); });
       }
     }
+    for (const db of ctx.src.dashboards) {
+      M.collectApps(db.columns).forEach((a) => get(a).dashboards.add(db.id));
+      M.collectUuids(db.columns).forEach((u) => { const a = ctx.src.devices[u] && M.deviceApp(ctx.src.devices[u]); if (a) get(a).dashboards.add(db.id); });
+    }
+    for (const d of Object.values(ctx.src.devices)) {
+      const a = M.deviceApp(d);
+      if (!a) continue;
+      const i = get(a);
+      i.devices++;
+      const m = ctx.deviceMatch[d.id];
+      if (m && m.target) i.linked++; else i.unmatched++;
+    }
+    const ids = new Set([...Object.keys(ctx.src.appInfo), ...Object.keys(info)]);
     const flowName = (fid) => (ctx.src.flowsById[String(fid).toLowerCase()] || {}).name || fid;
-    return Object.entries(used).map(([id, u]) => {
-      const info = ctx.src.appInfo[id] || {};
-      return {
-        id, name: info.name || id, origin: info.origin || null, channel: info.channel || 'live', version: info.version || '',
-        flows: u.flows.size, devices: u.devices.size,
-        // Used in a flow but not installed on the other Homey either: that flow is already broken there
-        notOnSource: !!(ctx.src.apps && !ctx.src.apps.has(id)),
-        flowNames: [...u.flows].map(flowName).slice(0, 5),
-      };
-    }).sort((a, b) => b.flows - a.flows || a.name.localeCompare(b.name));
+    const out = [];
+    for (const id of ids) {
+      if (ctx.dstApps.has(id)) continue;
+      const i = info[id] || get(id);
+      const app = ctx.src.appInfo[id] || {};
+      const notOnSource = !!(ctx.src.apps && !ctx.src.apps.has(id));
+      if (notOnSource && !i.flows.size && !i.dashboards.size) continue;
+      out.push({
+        id, name: app.name || id, origin: app.origin || null, channel: app.channel || 'live', version: app.version || '',
+        flows: i.flows.size, dashboards: i.dashboards.size, devices: i.devices, linked: i.linked, unmatched: i.unmatched,
+        used: i.flows.size + i.dashboards.size > 0,
+        notOnSource, flowNames: [...i.flows].map(flowName).slice(0, 5),
+      });
+    }
+    return out.sort((a, b) => (b.used - a.used) || (b.flows + b.dashboards - a.flows - a.dashboards) || a.name.localeCompare(b.name));
   }
 
   /** Apps installed on both Homeys with a different version (older here = flow cards may be missing). */

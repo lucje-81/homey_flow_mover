@@ -1,4 +1,8 @@
 {
+  "1.10.0": {
+    "en": "Complete list of missing apps: also apps used in dashboards, apps whose devices are here via Homey Link and (optionally) unused apps",
+    "nl": "Volledige lijst met ontbrekende apps: ook apps in dashboards, apps waarvan de toestellen hier via Homey Link staan en (optioneel) ongebruikte apps"
+  },
   "1.9.1": {
     "en": "Apps used in flows but not installed on the other Homey either are shown as such, with the flows that use them",
     "nl": "Apps die in flows gebruikt worden maar ook op de andere Homey niet meer staan, worden als dusdanig getoond, met de flows die ze gebruiken"

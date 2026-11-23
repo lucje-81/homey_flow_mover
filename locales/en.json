@@ -77,7 +77,7 @@
     "stepMissingHint": "The apps and variables of the other Homey that your flows need but that are not here yet, and apps that have an older version here (flow cards may then be missing). Install or update them first: with the API key of this Homey (step 1) the button installs the app directly; without it, it opens the App Store, click Install there and choose this Homey. Then click Refresh. After installing an app, add its devices yourself; step 3 then matches them automatically.",
     "appsTitle": "Apps",
     "varsTitle": "Variables",
-    "noMissingApps": "All apps your flows use are installed on this Homey.",
+    "noMissingApps": "All apps your flows and dashboards use are installed on this Homey.",
     "noMissingVars": "All variables already exist on this Homey.",
     "devicesCount": "{n} device(s) not matched",
     "install": "Install",
@@ -152,7 +152,13 @@
     "targetOk": "API key of this Homey saved and tested.",
     "targetMissing": "No API key of this Homey yet: creating (variables, flows, …) will fail with “Missing Scopes”.",
     "installFallback": "The app's page in the App Store opens now: install it there on this Homey.",
-    "notOnSource": "Not installed on the other Homey either: the app was removed there, but these flow(s) still use it and are already broken there: {flows}. Check if you still need them; otherwise leave them out when moving."
+    "notOnSource": "Not installed on the other Homey either: the app was removed there, but these flow(s) still use it and are already broken there: {flows}. Check if you still need them; otherwise leave them out when moving.",
+    "inDashboards": "in {n} dashboard(s)",
+    "appDevices": "{n} device(s)",
+    "appLinked": "{n} already here via e.g. Homey Link",
+    "appUnused": "not used in flows or dashboards",
+    "appAllLinked": "All devices are already here through Homey Link: only install the app if you want the devices directly on this Homey.",
+    "appsShowAll": "Also show apps not used in flows or dashboards ({n})"
   },
   "copy": "copy"
 }

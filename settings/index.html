@@ -215,9 +215,15 @@
     // ---- missing apps and variables
     function renderMissing() {
       var apps = data.missingApps || [];
-      $('appList').innerHTML = !apps.length ? '<div class="empty ok">' + esc(t('noMissingApps')) + '</div>' : apps.map(function (a) {
-        var where = [t('usedIn', { n: a.flows })];
-        if (a.devices) where.push(t('devicesCount', { n: a.devices }));
+      var showAll = $('appsAll') && $('appsAll').checked;
+      var shown = apps.filter(function (a) { return showAll || a.used || a.unmatched; });
+      var hidden = apps.filter(function (a) { return !a.used && !a.unmatched; }).length;
+      var appRow = function (a) {
+        var where = [];
+        if (a.flows) where.push(t('usedIn', { n: a.flows }));
+        if (a.dashboards) where.push(t('inDashboards', { n: a.dashboards }));
+        if (a.devices) where.push(t('appDevices', { n: a.devices }) + (a.linked ? ' (' + t('appLinked', { n: a.linked }) + ')' : ''));
+        if (!where.length) where.push(t('appUnused'));
         var act;
         if (a.notOnSource) {
           act = '<small class="act warn" style="flex-basis:100%">' + esc(t('notOnSource', { flows: a.flowNames.join(', ') })) + '</small>';
@@ -226,8 +232,11 @@
         } else {
           act = '<small class="act warn" style="flex-basis:100%">' + esc(t('cliApp')) + ' <code>homey app install</code></small>';
         }
-        return '<div class="miss"><span class="nm"><b>' + esc(a.name) + '</b><small>' + esc(a.id + (a.channel === 'test' ? ' · test' : '') + ' · ' + where.join(' · ')) + '</small></span>' + act + '</div>';
-      }).join('');
+        var note = a.linked && a.linked === a.devices && !a.flows && !a.dashboards ? '<small class="act" style="flex-basis:100%;color:#888">' + esc(t('appAllLinked')) + '</small>' : '';
+        return '<div class="miss"><span class="nm"><b>' + esc(a.name) + '</b><small>' + esc(a.id + (a.channel === 'test' ? ' · test' : '') + ' · ' + where.join(' · ')) + '</small></span>' + act + note + '</div>';
+      };
+      $('appList').innerHTML = (!shown.length ? '<div class="empty ok">' + esc(t('noMissingApps')) + '</div>' : shown.map(appRow).join(''))
+        + (apps.length ? '<label class="chk" style="margin-top:6px"><input id="appsAll" type="checkbox"' + (showAll ? ' checked' : '') + '> <span>' + esc(t('appsShowAll', { n: hidden })) + '</span></label>' : '');
       var sys = data.systemDevices || [];
       if (!sys.length) $('systemList').innerHTML = '<div class="empty ok">' + esc(t('noSystem')) + '</div>';
       else {
@@ -497,6 +506,7 @@
           });
       }
       $('versionList').addEventListener('click', openStore);
+      $('appList').addEventListener('change', function (e) { if (e.target.id === 'appsAll') renderMissing(); });
       $('systemList').addEventListener('click', function (e) {
         if (e.target.id !== 'createGroups') return;
         var ids = [].slice.call(document.querySelectorAll('[data-group]:checked')).map(function (x) { return x.getAttribute('data-group'); });
