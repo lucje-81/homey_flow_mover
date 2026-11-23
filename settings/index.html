@@ -131,6 +131,7 @@
       <div class="row" style="margin-top:8px"><button id="migrate" class="primary" disabled></button><span class="status" id="migStatus"></span></div>
     </div>
     <ul class="result" id="result"></ul>
+    <details class="help"><summary data-t="diag"></summary><pre id="diag" style="white-space:pre-wrap;font-size:11px;user-select:text"></pre></details>
   </div>
 
   <div class="card off" id="stepDash">
@@ -210,6 +211,7 @@
         selected = keep;
         renderDevices();
         renderFlows();
+        $('diag').textContent = JSON.stringify(data.diag || {}, null, 1);
       }).catch(function (err) {
         $('flowList').innerHTML = '<div class="empty err">' + esc(err.message || err) + '</div>';
       });

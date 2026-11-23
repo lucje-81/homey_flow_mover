@@ -1,4 +1,8 @@
 {
+  "1.13.1": {
+    "en": "Full card id in 'card does not exist' and a diagnostics block",
+    "nl": "Volledige kaart-ID bij 'kaart bestaat niet' en een diagnoseblok"
+  },
   "1.13.0": {
     "en": "Devices with the same name are told apart by their current values (Homey Link mirrors the original)",
     "nl": "Toestellen met dezelfde naam worden onderscheiden op hun actuele waarden (Homey Link neemt die van het origineel over)"

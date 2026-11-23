@@ -179,7 +179,8 @@
     "sameName": "Same name",
     "allTargets": "All devices",
     "allDevices": "Also show devices not used in flows ({n}) — they count for Rooms and zones",
-    "how_values": "matched by name + the same current values"
+    "how_values": "matched by name + the same current values",
+    "diag": "Diagnostics (for support)"
   },
   "copy": "copy"
 }

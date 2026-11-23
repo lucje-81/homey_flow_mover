@@ -270,7 +270,17 @@ class FlowMoverApp extends Homey.App {
     const targets = Object.values(ctx.dst.devices)
       .map((d) => ({ id: d.id, name: d.name, zone: zoneName(ctx.dst.zones, d.zone), app: M.deviceApp(d) }))
       .sort((a, b) => a.name.localeCompare(b.name));
+    // Diagnostics: a few card ids as this Homey reports them, next to card ids used in the flows
+    const cardList = ctx.dstCards ? [...ctx.dstCards] : [];
+    const missingCards = [...new Set(flows.flatMap((f) => f.issues.filter((i) => i.kind === 'card').map((i) => i.id)))];
+    const diag = {
+      cardsHere: cardList.length,
+      sampleManager: cardList.filter((x) => /manager/.test(x)).slice(0, 8),
+      sampleDevice: cardList.filter((x) => /device/.test(x)).slice(0, 8),
+      missingCards: missingCards.slice(0, 12),
+    };
     return {
+      diag,
       flows, devices, targets, cardsChecked: !!(ctx.dstCards && ctx.dstCards.size),
       missingApps: this.missingApps(ctx), missingVariables: this.missingVariables(ctx), zones: this.zonePlan(ctx),
       dashboards: this.analyseDashboards(ctx),
