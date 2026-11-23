@@ -3,7 +3,8 @@
     "notConnected": "Not connected yet: enter the address and API key of the other Homey.",
     "noAddress": "Enter the IP address of the other Homey.",
     "flowRefs": "Cards that start other flows could not be updated",
-    "appSettings": "The API key may not read app settings. Create a key with the Apps permission (not read only) and connect again."
+    "appSettings": "The API key may not read app settings. Create a key with the Apps permission (not read only) and connect again.",
+    "favorites": "The API key may not read your user data (favorites). Create a key with the Users permission and connect again."
   },
   "settings": {
     "title": "Flow Mover",
@@ -106,7 +107,18 @@
     "dashExists": "A dashboard with this name already exists (will be created as a copy).",
     "widgets": "{n} widget(s)",
     "optWidgetSettings": "Also copy the settings of Compact Widgets (gauge panels, icons, chosen values of inverter/boiler/charger); replaces the current settings of that app on this Homey",
-    "moveDash": "Move selected dashboards"
+    "moveDash": "Move selected dashboards",
+    "stepFav": "Favorites",
+    "stepFavHint": "Takes over your favorites (devices, flows) from the other Homey, added to what is already a favorite here. Do this last, so the flows exist. Favorites that cannot be converted are skipped. Other users set their own favorites.",
+    "noFavorites": "No favorites found on the other Homey.",
+    "favItems": "{n} item(s)",
+    "favUnmatched": "{n} cannot be converted (skipped)",
+    "copyFav": "Copy favorites",
+    "favDone": "Favorites copied. Restart the Homey app on your tablet or phone to see them.",
+    "fav_favoriteDevices": "Favorite devices",
+    "fav_favoriteFlows": "Favorite flows",
+    "fav_favoriteMoods": "Favorite moods",
+    "fav_favoriteDashboards": "Favorite dashboards"
   },
   "copy": "copy"
 }

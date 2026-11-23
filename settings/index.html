@@ -123,6 +123,12 @@
     <div id="dashList"></div>
   </div>
 
+  <div class="card off" id="stepFav">
+    <h2><span class="n">7</span><span data-t="stepFav"></span></h2>
+    <p class="hint" data-t="stepFavHint"></p>
+    <div id="favList"></div>
+  </div>
+
   <script type="text/javascript">
     var H;
     var data = null;
@@ -176,6 +182,8 @@
         $('stepMissing').classList.remove('off');
         $('stepZones').classList.remove('off');
         $('stepDash').classList.remove('off');
+        $('stepFav').classList.remove('off');
+        loadFavorites();
         renderDashboards();
         renderZones();
         renderMissing();
@@ -209,6 +217,19 @@
         return '<label class="miss"><input type="checkbox" data-var="' + esc(v.id) + '"' + (v.flows ? ' checked' : '') + '><span class="nm"><b>' + esc(v.name) + '</b><small>'
           + esc(t('type_' + v.type) + ' · ' + t('value') + ': ' + (v.value === '' || v.value == null ? '–' : v.type === 'boolean' ? t(v.value ? 'yes' : 'no') : String(v.value)) + ' · ' + (v.flows ? t('usedIn', { n: v.flows }) : t('notUsed'))) + '</small></span></label>';
       }).join('') + '<div class="row" style="margin-top:8px"><button id="createVars" class="small primary">' + esc(t('createVars')) + '</button><span class="status" id="varStatus"></span></div>';
+    }
+
+    // ---- favorites
+    function loadFavorites() {
+      $('favList').innerHTML = '<div class="empty">…</div>';
+      api('GET', '/favorites').then(function (f) {
+        if (!f.ok) { $('favList').innerHTML = '<div class="empty err">' + esc(f.error) + '</div>'; return; }
+        if (!f.lists.length) { $('favList').innerHTML = '<div class="empty">' + esc(t('noFavorites')) + '</div>'; return; }
+        $('favList').innerHTML = f.lists.map(function (l) {
+          return '<div class="miss"><span class="nm"><b>' + esc(t('fav_' + l.key) !== 'settings.fav_' + l.key ? t('fav_' + l.key) : l.key) + '</b><small>'
+            + esc(t('favItems', { n: l.items }) + (l.unmatched ? ' · ' + t('favUnmatched', { n: l.unmatched }) : '')) + '</small></span></div>';
+        }).join('') + '<div class="row" style="margin-top:8px"><button id="copyFav" class="small primary">' + esc(t('copyFav')) + '</button><span class="status" id="favStatus"></span></div>';
+      }).catch(function (err) { $('favList').innerHTML = '<div class="empty err">' + esc(err.message || err) + '</div>'; });
     }
 
     // ---- dashboards
@@ -345,6 +366,17 @@
       $('search').placeholder = t('search');
       $('keySteps').innerHTML = [1, 2, 3, 4].map(function (i) { return '<li>' + esc(t('key' + i)) + '</li>'; }).join('');
       $('connect').addEventListener('click', connect);
+      $('favList').addEventListener('click', function (e) {
+        if (e.target.id !== 'copyFav') return;
+        e.target.disabled = true;
+        $('favStatus').textContent = t('zonesBusy');
+        api('POST', '/favorites').then(function (res) {
+          var bad = res.filter(function (r) { return !r.ok; });
+          $('favStatus').className = 'status ' + (bad.length ? 'err' : 'ok');
+          $('favStatus').textContent = bad.length ? bad.map(function (r) { return r.name + ': ' + r.error; }).join(', ') : t('favDone');
+          e.target.disabled = false;
+        }).catch(function (er) { H.alert(er.message || String(er)); e.target.disabled = false; });
+      });
       $('dashList').addEventListener('click', function (e) {
         if (e.target.id !== 'moveDash') return;
         var ids = [].slice.call(document.querySelectorAll('[data-dash]:checked')).map(function (x) { return x.getAttribute('data-dash'); });

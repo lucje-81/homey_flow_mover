@@ -3,7 +3,8 @@
     "notConnected": "Nog niet verbonden: vul het adres en de API-sleutel van de andere Homey in.",
     "noAddress": "Vul het IP-adres van de andere Homey in.",
     "flowRefs": "Kaarten die andere flows starten konden niet bijgewerkt worden",
-    "appSettings": "De API-sleutel mag de instellingen van apps niet lezen. Maak een sleutel aan met het recht Apps (niet alleen lezen) en verbind opnieuw."
+    "appSettings": "De API-sleutel mag de instellingen van apps niet lezen. Maak een sleutel aan met het recht Apps (niet alleen lezen) en verbind opnieuw.",
+    "favorites": "De API-sleutel mag je gebruikersgegevens (favorieten) niet lezen. Maak een sleutel aan met het recht Gebruikers en verbind opnieuw."
   },
   "settings": {
     "title": "Flow-verhuizer",
@@ -106,7 +107,18 @@
     "dashExists": "Er bestaat al een dashboard met deze naam (wordt als kopie aangemaakt).",
     "widgets": "{n} widget(s)",
     "optWidgetSettings": "Ook de instellingen van Compacte widgets overnemen (meterpanelen, iconen, gekozen waarden van omvormer/ketel/laadpaal); vervangt de huidige instellingen van die app op deze Homey",
-    "moveDash": "Geselecteerde dashboards overzetten"
+    "moveDash": "Geselecteerde dashboards overzetten",
+    "stepFav": "Favorieten",
+    "stepFavHint": "Neemt jouw favorieten (toestellen, flows) van de andere Homey over, als aanvulling op wat hier al favoriet is. Doe dit als laatste, zodat de flows al bestaan. Favorieten die niet omgezet kunnen worden, worden overgeslagen. Andere gebruikers zetten hun favorieten zelf.",
+    "noFavorites": "Geen favorieten gevonden op de andere Homey.",
+    "favItems": "{n} item(s)",
+    "favUnmatched": "{n} niet om te zetten (wordt overgeslagen)",
+    "copyFav": "Favorieten overnemen",
+    "favDone": "Favorieten overgenomen. Herstart de Homey-app op je tablet of gsm om ze te zien.",
+    "fav_favoriteDevices": "Favoriete toestellen",
+    "fav_favoriteFlows": "Favoriete flows",
+    "fav_favoriteMoods": "Favoriete moods",
+    "fav_favoriteDashboards": "Favoriete dashboards"
   },
   "copy": "kopie"
 }

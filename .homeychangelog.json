@@ -1,4 +1,8 @@
 {
+  "1.4.0": {
+    "en": "Favorites: take over your favorite devices and flows",
+    "nl": "Favorieten: je favoriete toestellen en flows overnemen"
+  },
   "1.3.0": {
     "en": "Dashboards: copy dashboards with converted device, zone and flow ids, and the settings of Compact Widgets",
     "nl": "Dashboards: dashboards kopiëren met omgezette toestellen, zones en flows, en de instellingen van Compacte widgets"

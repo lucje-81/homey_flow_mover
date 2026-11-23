@@ -37,6 +37,14 @@ module.exports = {
     return homey.app.migrateDashboards(body || {});
   },
 
+  async getFavorites({ homey }) {
+    return homey.app.analyseFavorites();
+  },
+
+  async copyFavorites({ homey }) {
+    return homey.app.copyFavorites();
+  },
+
   async migrate({ homey, body }) {
     return homey.app.migrate(body || {});
   },

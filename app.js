@@ -266,6 +266,72 @@ class FlowMoverApp extends Homey.App {
     return results;
   }
 
+  /** The owner's favorites (devices, flows, …) from the user properties on both Homeys. */
+  async favoritesOf(api) {
+    const me = await api.users.getUserMe();
+    const props = (me && me.properties) || {};
+    const out = {};
+    for (const [key, value] of Object.entries(props)) {
+      if (/favou?rite/i.test(key) && value && typeof value === 'object') out[key] = M.plain(value);
+    }
+    return out;
+  }
+
+  /** What the favorites look like on the other Homey, and how many items can be converted. */
+  async analyseFavorites() {
+    const ctx = await this.context();
+    let src;
+    try {
+      src = await this.favoritesOf(await this.getSource());
+    } catch (err) {
+      return { ok: false, error: this.homey.__('errors.favorites') };
+    }
+    const lists = Object.entries(src).map(([key, value]) => {
+      const ids = [...M.collectUuids(value)];
+      return { key, items: ids.length, unmatched: ids.filter((u) => !ctx.idMap[u]).length };
+    });
+    return { ok: true, lists };
+  }
+
+  /** Add the favorites of the other Homey to those of the owner here (ids converted, nothing removed). */
+  async copyFavorites() {
+    this.cache = {};
+    const ctx = await this.context();
+    const src = await this.favoritesOf(await this.getSource());
+    const dst = await this.favoritesOf(this.target).catch(() => ({}));
+    const results = [];
+    for (const [key, value] of Object.entries(src)) {
+      // Keep only items that could be converted to an id of this Homey
+      const keep = (item) => [...M.collectUuids(item)].every((u) => ctx.idMap[u]);
+      let merged;
+      if (Array.isArray(value)) {
+        const mine = Array.isArray(dst[key]) ? dst[key] : [];
+        const add = value.filter(keep).map((v) => M.rewrite(v, ctx.idMap));
+        const seen = new Set(mine.map((v) => JSON.stringify(v)));
+        merged = mine.concat(add.filter((v) => !seen.has(JSON.stringify(v))));
+      } else {
+        const mine = dst[key] && typeof dst[key] === 'object' && !Array.isArray(dst[key]) ? dst[key] : {};
+        merged = { ...mine };
+        for (const [k, v] of Object.entries(value)) {
+          if (!keep(k) || !keep(v)) continue;
+          merged[ctx.idMap[String(k).toLowerCase()] || k] = M.rewrite(v, ctx.idMap);
+        }
+      }
+      if (JSON.stringify(merged) === JSON.stringify(dst[key] === undefined ? (Array.isArray(value) ? [] : {}) : dst[key])) {
+        results.push({ type: 'favorites', name: key, ok: true, count: 0, unchanged: true });
+        continue;
+      }
+      try {
+        await this.target.users.updateUserMeProperties({ id: key, value: merged });
+        const count = Array.isArray(merged) ? merged.length : Object.keys(merged).length;
+        results.push({ type: 'favorites', name: key, ok: true, count });
+      } catch (err) {
+        results.push({ type: 'favorites', name: key, ok: false, error: err.message });
+      }
+    }
+    return results;
+  }
+
   /** Settings of the Compact Widgets app (gauge panels, icons, chosen values), with device ids rewritten. */
   async copyWidgetSettings(ctx) {
     const src = await this.getSource();
