@@ -354,7 +354,13 @@ class FlowMoverApp extends Homey.App {
         await this.target.apps.setAppSetting({ id: WIDGET_APP, name: key, value });
         out.push({ type: 'settings', name: `Compact Widgets: ${key}`, ok: true });
       } catch (err) {
-        out.push({ type: 'settings', name: `Compact Widgets: ${key}`, ok: false, error: err.message });
+        // Apps may not write each other's settings directly: use the import endpoint of Compact Widgets (0.11+)
+        try {
+          await this.homey.api.getApiApp(WIDGET_APP).post('/import', { [key]: value });
+          out.push({ type: 'settings', name: `Compact Widgets: ${key}`, ok: true });
+        } catch (err2) {
+          out.push({ type: 'settings', name: `Compact Widgets: ${key}`, ok: false, error: `${err.message} / ${this.homey.__('errors.widgetImport')}` });
+        }
       }
     }
     return out;
@@ -464,6 +470,11 @@ class FlowMoverApp extends Homey.App {
     if (dstId === undefined) delete map[srcId];
     else map[srcId] = dstId || '';
     this.homey.settings.set('deviceMap', map);
+    return true;
+  }
+
+  async refresh() {
+    this.cache = {};
     return true;
   }
 

@@ -4,7 +4,8 @@
     "noAddress": "Enter the IP address of the other Homey.",
     "flowRefs": "Cards that start other flows could not be updated",
     "appSettings": "The API key may not read app settings. Create a key with the Apps permission (not read only) and connect again.",
-    "favorites": "The API key may not read your user data (favorites). Create a key with the Users permission and connect again."
+    "favorites": "The API key may not read your user data (favorites). Create a key with the Users permission and connect again.",
+    "widgetImport": "Update Compact Widgets to version 0.11 or newer and try again"
   },
   "settings": {
     "title": "Flow Mover",
@@ -71,7 +72,7 @@
     "created": "created",
     "skipped": "skipped (exists)",
     "stepMissing": "What is missing on this Homey?",
-    "stepMissingHint": "The apps and variables of the other Homey that your flows need but that are not here yet, and apps that have an older version here (flow cards may then be missing). Install or update them first so the flows come over completely. After installing an app, add its devices yourself; step 3 then matches them automatically.",
+    "stepMissingHint": "The apps and variables of the other Homey that your flows need but that are not here yet, and apps that have an older version here (flow cards may then be missing). Install or update them first: “Open in App Store” opens the app's page, click Install there and choose this Homey. Then click Connect (step 1) again to refresh the list. After installing an app, add its devices yourself; step 3 then matches them automatically.",
     "appsTitle": "Apps",
     "varsTitle": "Variables",
     "noMissingApps": "All apps your flows use are installed on this Homey.",
@@ -125,7 +126,9 @@
     "update": "Update",
     "updating": "Updating…",
     "cliUpdate": "Installed by yourself: update from your PC in the app's folder with",
-    "versionsNewer": "Newer here than on the other Homey (no problem):"
+    "versionsNewer": "Newer here than on the other Homey (no problem):",
+    "openStore": "Open in App Store",
+    "refresh": "Refresh"
   },
   "copy": "copy"
 }

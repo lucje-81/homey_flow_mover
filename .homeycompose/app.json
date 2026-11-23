@@ -1,6 +1,6 @@
 {
   "id": "flow.mover",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -32,7 +32,8 @@
     ]
   },
   "permissions": [
-    "homey:manager:api"
+    "homey:manager:api",
+    "homey:app:compact.widgets"
   ],
   "brandColor": "#2f6fde",
   "images": {
@@ -92,6 +93,10 @@
     "copyFavorites": {
       "method": "POST",
       "path": "/favorites"
+    },
+    "refresh": {
+      "method": "POST",
+      "path": "/refresh"
     }
   }
 }

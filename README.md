@@ -9,7 +9,7 @@ Homey has a hidden export/import in the web app (hold ALT on the "…" menu), bu
 Install the app on the Homey that should **receive** the flows (e.g. the Self-Hosted Server), then open **Apps → Flow Mover → Configure app**.
 
 1. **Connect to the other Homey**: its IP address and an API key of that Homey (my.homey.app → select the old Homey → Settings → API Keys → New API Key, read access to Devices, Flows, Logic, Zones, Users (also for favorites) and Dashboards, plus the Apps permission if you want to copy the Compact Widgets settings).
-2. **What is missing**: the apps your flows use that are not installed on this Homey (App Store apps can be installed with one button, apps installed with the Homey CLI are listed with the command to install them), apps that have an older version here than on the other Homey (App Store apps can be updated with one button; flow cards of newer versions may otherwise be missing), and the variables that don't exist here yet (create the ticked ones with one button)
+2. **What is missing**: the apps your flows use that are not installed on this Homey (App Store apps open in the App Store to install them on this Homey — Homey doesn't allow apps to install other apps; apps installed with the Homey CLI are listed with the command to install them), apps that have an older version here than on the other Homey (App Store apps open in the App Store to update them; flow cards of newer versions may otherwise be missing), and the variables that don't exist here yet (create the ticked ones with one button)
 3. **Match devices**: every device used in your flows is matched to the device with the same name on this Homey (preferring the same app and zone). Unmatched or wrong matches can be chosen by hand; the choice is remembered.
 4. **Rooms and zones**: rebuilds the zone structure of the other Homey (floors, rooms, same icons) and moves every matched device into the same room as on the other Homey — handy after importing devices with Homey Link, which puts them all in the root zone. Zones are matched by their path of names, so existing zones are reused
 5. **Choose and move flows**: every flow shows its status
@@ -19,7 +19,7 @@ Install the app on the Homey that should **receive** the flows (e.g. the Self-Ho
    - = a flow with this name already exists
 
    Move the selected flows with one button.
-6. **Dashboards**: copies dashboards with all widgets, with device, zone and flow ids converted. Optionally also copies the settings of the [Compact Widgets](https://github.com/lucje-81/homey_compact_widgets) app (gauge panels, icons, chosen values), with device ids converted, so those widgets work at once. Columns and widgets get new ids; a dashboard with an existing name is created as "(copy)"
+6. **Dashboards**: copies dashboards with all widgets, with device, zone and flow ids converted. Optionally also copies (via Compact Widgets 0.11+) the settings of the [Compact Widgets](https://github.com/lucje-81/homey_compact_widgets) app (gauge panels, icons, chosen values), with device ids converted, so those widgets work at once. Columns and widgets get new ids; a dashboard with an existing name is created as "(copy)"
 
 7. **Favorites**: adds your favorite devices and flows of the other Homey to your favorites here (owner account, ids converted, nothing removed, items that cannot be converted are skipped). Do this last so the flows exist. Other users set their own favorites.
 

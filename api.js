@@ -45,6 +45,10 @@ module.exports = {
     return homey.app.copyFavorites();
   },
 
+  async refresh({ homey }) {
+    return homey.app.refresh();
+  },
+
   async migrate({ homey, body }) {
     return homey.app.migrate(body || {});
   },

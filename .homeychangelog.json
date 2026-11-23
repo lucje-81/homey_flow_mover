@@ -1,4 +1,8 @@
 {
+  "1.6.0": {
+    "en": "App Store link instead of installing (Homey does not allow apps to install apps), Refresh button, Compact Widgets settings via its import endpoint",
+    "nl": "Link naar de App Store in plaats van installeren (Homey laat niet toe dat apps apps installeren), knop Vernieuwen, instellingen van Compacte widgets via hun importfunctie"
+  },
   "1.5.0": {
     "en": "App versions: shows apps that are older here than on the other Homey, with an update button for App Store apps",
     "nl": "App-versies: toont apps die hier ouder zijn dan op de andere Homey, met een knop om App Store-apps bij te werken"

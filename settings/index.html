@@ -75,6 +75,7 @@
   <div class="card off" id="stepMissing">
     <h2><span class="n">2</span><span data-t="stepMissing"></span></h2>
     <p class="hint" data-t="stepMissingHint"></p>
+    <div class="row"><button id="refresh" class="small" data-t="refresh" style="margin-left:auto"></button></div>
     <h3 data-t="appsTitle"></h3>
     <div id="appList"></div>
     <h3 data-t="versionsTitle"></h3>
@@ -208,7 +209,7 @@
         if (a.devices) where.push(t('devicesCount', { n: a.devices }));
         var act;
         if (a.origin === 'appstore') {
-          act = '<button class="small primary act" data-install="' + esc(a.id) + '" data-channel="' + esc(a.channel) + '">' + esc(t('install')) + '</button>';
+          act = '<button class="small primary act" data-store="' + esc(a.id) + '">' + esc(t('openStore')) + '</button>';
         } else {
           act = '<small class="act warn" style="flex-basis:100%">' + esc(t('cliApp')) + ' <code>homey app install</code></small>';
         }
@@ -219,7 +220,7 @@
       var newer = vers.filter(function (v) { return !v.older; });
       var vhtml = !older.length ? '<div class="empty ok">' + esc(t('versionsOk')) + '</div>' : older.map(function (v) {
         var act = v.origin === 'appstore'
-          ? '<button class="small primary act" data-install="' + esc(v.id) + '" data-channel="' + esc(v.channel) + '">' + esc(t('update')) + '</button>'
+          ? '<button class="small primary act" data-store="' + esc(v.id) + '">' + esc(t('openStore')) + '</button>'
           : '<small class="act warn" style="flex-basis:100%">' + esc(t('cliUpdate')) + ' <code>git pull</code> + <code>homey app install</code></small>';
         return '<div class="miss"><span class="nm"><b>' + esc(v.name) + '</b><small>' + esc(t('versionHere', { here: v.here, there: v.there }) + (v.flows ? ' · ' + t('usedIn', { n: v.flows }) : '')) + '</small></span>' + act + '</div>';
       }).join('');
@@ -423,24 +424,16 @@
           }).catch(function (er) { H.alert(er.message || String(er)); e.target.disabled = false; });
         });
       });
-      $('versionList').addEventListener('click', function (e) {
-        var b = e.target.closest('[data-install]');
+      // Apps may not install other apps (Homey refuses with "Missing Scopes"): open the App Store page instead
+      function openStore(e) {
+        var b = e.target.closest('[data-store]');
         if (!b) return;
-        b.disabled = true;
-        b.textContent = t('updating');
-        api('POST', '/install-app', { id: b.getAttribute('data-install'), channel: b.getAttribute('data-channel') })
-          .then(analyse)
-          .catch(function (err) { b.disabled = false; b.textContent = t('update'); H.alert(t('installFailed') + ' ' + (err.message || err)); });
-      });
-      $('appList').addEventListener('click', function (e) {
-        var b = e.target.closest('[data-install]');
-        if (!b) return;
-        b.disabled = true;
-        b.textContent = t('installing');
-        api('POST', '/install-app', { id: b.getAttribute('data-install'), channel: b.getAttribute('data-channel') })
-          .then(analyse)
-          .catch(function (err) { b.disabled = false; b.textContent = t('install'); H.alert(t('installFailed') + ' ' + (err.message || err)); });
-      });
+        var url = 'https://homey.app/a/' + encodeURIComponent(b.getAttribute('data-store')) + '/';
+        if (H.openURL) H.openURL(url); else window.open(url, '_blank');
+      }
+      $('versionList').addEventListener('click', openStore);
+      $('refresh').addEventListener('click', function () { api('POST', '/refresh').then(analyse); });
+      $('appList').addEventListener('click', openStore);
       $('varList').addEventListener('click', function (e) {
         if (e.target.id !== 'createVars') return;
         var ids = [].slice.call(document.querySelectorAll('[data-var]:checked')).map(function (x) { return x.getAttribute('data-var'); });
