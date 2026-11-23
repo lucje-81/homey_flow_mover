@@ -1,4 +1,8 @@
 {
+  "1.13.0": {
+    "en": "Devices with the same name are told apart by their current values (Homey Link mirrors the original)",
+    "nl": "Toestellen met dezelfde naam worden onderscheiden op hun actuele waarden (Homey Link neemt die van het origineel over)"
+  },
   "1.12.0": {
     "en": "Better device matching: via Homey Link, then name + room, one to one; shows how each device was matched; all devices can be shown",
     "nl": "Betere koppeling van toestellen: via Homey Link, dan naam + ruimte, één op één; toont hoe elk toestel gekoppeld is; alle toestellen kunnen getoond worden"

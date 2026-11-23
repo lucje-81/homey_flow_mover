@@ -178,7 +178,8 @@
     "how_missing": "geen toestel met deze naam gevonden",
     "sameName": "Zelfde naam",
     "allTargets": "Alle toestellen",
-    "allDevices": "Ook toestellen tonen die niet in flows staan ({n}) — telt mee voor Kamers en zones"
+    "allDevices": "Ook toestellen tonen die niet in flows staan ({n}) — telt mee voor Kamers en zones",
+    "how_values": "gekoppeld op naam + dezelfde actuele waarden"
   },
   "copy": "kopie"
 }

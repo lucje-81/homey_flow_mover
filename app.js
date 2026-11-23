@@ -130,6 +130,11 @@ class FlowMoverApp extends Homey.App {
     const data = {
       devices: byId(devices, (d) => {
         const out = { id: String(d.id).toLowerCase(), name: d.name, zone: d.zone, driverId: d.driverId || d.driverUri, ownerUri: d.ownerUri, class: d.class };
+        // Current values: a Homey Link device mirrors the values of the original, which helps to tell devices with the same name apart
+        out.values = {};
+        for (const [cap, c] of Object.entries(d.capabilitiesObj || {})) {
+          if (c && ['number', 'boolean', 'string', 'enum'].includes(c.type) && c.value !== null && c.value !== undefined) out.values[cap] = c.value;
+        }
         // Device ids this device refers to: Homey Link devices keep the id of the original device
         if (side === 'target') out.refs = [...M.collectUuids([d.data, d.settings, d.settingsObj])].filter((u) => u !== out.id);
         // Groups: keep what is needed to rebuild them (members are found in data/settings)
