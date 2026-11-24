@@ -9,7 +9,8 @@
     "groupMembers": "Geen van de leden is op deze Homey gekoppeld. Voeg de toestellen eerst toe (of via Homey Link).",
     "noTargetToken": "Vul eerst een API-sleutel van deze Homey in.",
     "noLinkHomey": "Kies in stap 5 naar welke Homey de brugflows (Homey Link) moeten verwijzen.",
-    "sourceWrite": "de API-sleutel van de andere Homey moet schrijfrechten op Flows hebben"
+    "sourceWrite": "de API-sleutel van de andere Homey moet schrijfrechten op Flows hebben",
+    "groupRestore": "Leden konden niet teruggezet worden in de groep — controleer de groep"
   },
   "settings": {
     "title": "Flow-verhuizer",
@@ -201,8 +202,8 @@
     "switchBack": "Terug naar de andere Homey",
     "switchHereConfirm": "{n} flow(s) omschakelen: hier en de brugflow aan, op de andere Homey uit?",
     "switchBackConfirm": "{n} flow(s) terugzetten: op de andere Homey aan, hier en de brugflow uit?",
-    "zonesGrouped": "Leden van een groep ({n})",
-    "zonesGroupedHint": "Deze toestellen zitten in een toestelgroep. Homey laat niet toe ze apart te verplaatsen: ze staan altijd in de zone van hun groep. Ze gaan mee wanneer de groep naar zijn kamer verplaatst wordt."
+    "zonesGrouped": "Leden van een groep ({n}) — worden ook verplaatst",
+    "zonesGroupedHint": "Deze toestellen zitten in een toestelgroep. Homey laat een lid van een groep niet van zone veranderen, daarom haalt de verhuizer ze even uit hun groep, zet ze in hun kamer en voegt ze meteen weer toe (de groep blijft dezelfde)."
   },
   "copy": "kopie",
   "bridgeFolder": "Brug naar SHS",

@@ -370,12 +370,12 @@
     // ---- zones
     function renderZones() {
       var z = data.zones || { create: [], moves: [] };
-      if (!z.moves.length && !z.create.length) {
+      if (!z.moves.length && !z.create.length && !(z.grouped && z.grouped.length)) {
         $('zoneSummary').textContent = '';
         $('zoneList').innerHTML = '<div class="empty ok">' + esc(t('zonesOk')) + '</div>';
         return;
       }
-      $('zoneSummary').textContent = t('zonesSummary', { zones: z.create.length, devices: z.moves.length });
+      $('zoneSummary').textContent = t('zonesSummary', { zones: z.create.length, devices: z.moves.length + (z.grouped || []).length });
       var html = '';
       if (z.create.length) {
         html += '<h3>' + esc(t('zonesNew')) + '</h3><div class="hint">' + z.create.map(function (c) { return esc(c.path); }).join(' · ') + '</div>';
@@ -574,7 +574,7 @@
         if (e.target.id === 'zoneAll' || e.target.id === 'zoneNone') { boxes.forEach(function (b) { b.checked = e.target.id === 'zoneAll'; }); return; }
         if (e.target.id !== 'applyZones') return;
         var ids = boxes.filter(function (b) { return b.checked; }).map(function (b) { return b.getAttribute('data-move'); });
-        if (!ids.length && !(data.zones && data.zones.create.length)) return;
+        if (!ids.length && !(data.zones && (data.zones.create.length || (data.zones.grouped || []).length))) return;
         H.confirm(t('zonesConfirm', { n: ids.length }), 'warning', function (err, yes) {
           if (err || !yes) return;
           e.target.disabled = true;

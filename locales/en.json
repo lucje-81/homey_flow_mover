@@ -9,7 +9,8 @@
     "groupMembers": "None of the members is matched on this Homey. Add the devices first (or via Homey Link).",
     "noTargetToken": "Enter an API key of this Homey first.",
     "noLinkHomey": "Choose in step 5 which Homey the bridge flows (Homey Link) should start flows on.",
-    "sourceWrite": "the API key of the other Homey needs write access to Flows"
+    "sourceWrite": "the API key of the other Homey needs write access to Flows",
+    "groupRestore": "Members could not be put back in the group — check the group"
   },
   "settings": {
     "title": "Flow Mover",
@@ -201,8 +202,8 @@
     "switchBack": "Back to the other Homey",
     "switchHereConfirm": "Switch {n} flow(s): enable here and the bridge flow, disable on the other Homey?",
     "switchBackConfirm": "Put {n} flow(s) back: enable on the other Homey, disable here and the bridge flow?",
-    "zonesGrouped": "Group members ({n})",
-    "zonesGroupedHint": "These devices are in a device group. Homey doesn't allow moving them on their own: they are always in the zone of their group. They move along when the group is moved to its room."
+    "zonesGrouped": "Group members ({n}) — are moved too",
+    "zonesGroupedHint": "These devices are in a device group. Homey doesn't let a group member change zone, so they are taken out of their group for a moment, moved to their room and put back right away (the group stays the same)."
   },
   "copy": "copy",
   "bridgeFolder": "Bridge to SHS",

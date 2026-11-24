@@ -1,4 +1,8 @@
 {
+  "1.15.0": {
+    "en": "Rooms and zones: group members are moved too (taken out of their group, moved, put back)",
+    "nl": "Kamers en zones: groepsleden worden ook verplaatst (even uit hun groep, verplaatst, terug erin)"
+  },
   "1.14.1": {
     "en": "Rooms and zones: members of a device group are not moved on their own (Homey doesn't allow it); they follow their group",
     "nl": "Kamers en zones: leden van een toestelgroep worden niet apart verplaatst (Homey laat dat niet toe); ze volgen hun groep"

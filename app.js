@@ -305,15 +305,22 @@ class FlowMoverApp extends Homey.App {
     // Members of a device group can't be moved on their own (Homey: "Cannot change zone of a grouped
     // device"): they follow their group. Find them via the groups here and the groups on the other Homey.
     const groupOf = {};
+    const groupMembers = {};
+    const addMember = (gid, gname, mid) => {
+      const k = String(mid).toLowerCase();
+      if (!groupOf[k]) groupOf[k] = { id: gid, name: gname };
+      (groupMembers[gid] = groupMembers[gid] || new Set()).add(k);
+    };
     for (const g of Object.values(ctx.dst.devices)) {
       if (M.systemDriver(g) !== 'group') continue;
-      for (const r of g.refs || []) if (ctx.dst.devices[r]) groupOf[r] = g.name;
+      for (const r of g.refs || []) if (ctx.dst.devices[r]) addMember(g.id, g.name, r);
     }
     for (const g of Object.values(ctx.src.devices)) {
-      if (M.systemDriver(g) !== 'group' || !(ctx.deviceMatch[g.id] && ctx.deviceMatch[g.id].target)) continue;
+      const tg = M.systemDriver(g) === 'group' && ctx.deviceMatch[g.id] && ctx.deviceMatch[g.id].target;
+      if (!tg) continue;
       for (const mem of g.members || []) {
         const t = ctx.deviceMatch[mem] && ctx.deviceMatch[mem].target;
-        if (t && !groupOf[String(t).toLowerCase()]) groupOf[String(t).toLowerCase()] = g.name;
+        if (t) addMember(String(tg).toLowerCase(), g.name, t);
       }
     }
     const moves = [];
@@ -328,16 +335,17 @@ class FlowMoverApp extends Homey.App {
       if (want === have) continue;
       const item = { id: d.id, srcId, name: d.name, from: show(ctx.dst.zones, d.zone), to: show(ctx.src.zones, s.zone) };
       const group = groupOf[String(d.id).toLowerCase()];
-      if (group) grouped.push({ ...item, group });
+      if (group) grouped.push({ ...item, group: group.name, groupId: group.id });
       else moves.push(item);
     }
     moves.sort((a, b) => a.to.localeCompare(b.to) || a.name.localeCompare(b.name));
     grouped.sort((a, b) => a.group.localeCompare(b.group) || a.name.localeCompare(b.name));
-    return { create, moves, grouped };
+    const members = Object.fromEntries(Object.entries(groupMembers).map(([k, v]) => [k, [...v]]));
+    return { create, moves, grouped, members };
   }
 
   /** Create the missing zones (same names, icons and nesting) and move the chosen devices into their zone. */
-  async applyZones({ deviceIds }) {
+  async applyZones({ deviceIds, includeGrouped = true }) {
     this.cache = {};
     const ctx = await this.context();
     const results = [];
@@ -370,6 +378,49 @@ class FlowMoverApp extends Homey.App {
       } catch (err) {
         if (/group/i.test(err.message)) results.push({ type: 'device', name: m.name, ok: true, skipped: true, reason: 'grouped' });
         else results.push({ type: 'device', name: m.name, ok: false, error: err.message });
+      }
+    }
+    // Group members: Homey only lets a device change zone when it is not in a group. Take them out of
+    // their group, move them, and put them back (the group itself stays, with the same id).
+    if (includeGrouped !== false) {
+      const target = await this.targetApi();
+      const byGroup = {};
+      for (const g of plan.grouped || []) (byGroup[g.groupId] = byGroup[g.groupId] || []).push(g);
+      for (const [gid, items] of Object.entries(byGroup)) {
+        const all = (plan.members && plan.members[gid]) || items.map((i) => String(i.id).toLowerCase());
+        const moving = new Set(items.map((i) => String(i.id).toLowerCase()));
+        const zoneFor = (i) => created[String(ctx.src.devices[i.srcId].zone).toLowerCase()];
+        const moveOne = async (i) => {
+          const zone = zoneFor(i);
+          if (!zone) { results.push({ type: 'device', name: i.name, ok: false, error: i.to }); return; }
+          try {
+            await target.devices.updateDevice({ id: i.id, device: { zone } });
+            results.push({ type: 'device', name: i.name, ok: true, to: i.to, group: i.group });
+          } catch (err) {
+            results.push({ type: 'device', name: i.name, ok: false, error: err.message });
+          }
+        };
+        try {
+          // A group can't be empty: keep one member in while the others move, then swap
+          let keep = all.filter((m) => !moving.has(m));
+          let later = [];
+          if (!keep.length) { later = [items[0]]; keep = [String(items[0].id).toLowerCase()]; }
+          await target.devices.updateGroup({ id: gid, group: { deviceIds: keep } });
+          for (const i of items) if (!later.includes(i)) await moveOne(i);
+          if (later.length) {
+            await target.devices.updateGroup({ id: gid, group: { deviceIds: all.filter((m) => m !== keep[0]) } });
+            for (const i of later) await moveOne(i);
+          }
+        } catch (err) {
+          results.push({ type: 'group', name: items[0].group, ok: false, error: err.message });
+        } finally {
+          // Always put all members back
+          try {
+            await target.devices.updateGroup({ id: gid, group: { deviceIds: all } });
+          } catch (err) {
+            results.push({ type: 'group', name: items[0].group, ok: false, error: `${this.homey.__('errors.groupRestore')}: ${err.message}` });
+          }
+        }
       }
     }
     this.cache = {};
