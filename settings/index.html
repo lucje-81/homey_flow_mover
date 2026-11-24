@@ -385,6 +385,10 @@
         return '<label class="miss"><input type="checkbox" data-move="' + esc(m.id) + '" checked><span class="nm"><b>' + esc(m.name) + '</b><small>'
           + esc(m.from) + ' → <b style="display:inline;color:#222">' + esc(m.to) + '</b></small></span></label>';
       }).join('');
+      if (z.grouped && z.grouped.length) {
+        html += '<h3>' + esc(t('zonesGrouped', { n: z.grouped.length })) + '</h3><div class="hint">' + esc(t('zonesGroupedHint')) + '</div><div class="hint">'
+          + z.grouped.map(function (g) { return esc(g.name + ' → ' + g.group); }).join(' · ') + '</div>';
+      }
       html += '<div class="row" style="margin-top:8px"><button id="applyZones" class="small primary">' + esc(t('zonesApply')) + '</button><span class="status" id="zoneStatus"></span></div>';
       $('zoneList').innerHTML = html;
     }
@@ -577,7 +581,7 @@
           $('zoneStatus').textContent = t('zonesBusy');
           api('POST', '/zones', { deviceIds: ids }).then(function (res) {
             var bad = res.filter(function (r) { return !r.ok; });
-            var moved = res.filter(function (r) { return r.ok && r.type === 'device'; }).length;
+            var moved = res.filter(function (r) { return r.ok && !r.skipped && r.type === 'device'; }).length;
             var zones = res.filter(function (r) { return r.ok && r.type === 'zone'; }).length;
             if (bad.length) H.alert(bad.map(function (r) { return r.name + ': ' + r.error; }).join('\n'));
             return analyse().then(function () { $('zoneSummary').textContent = t('zonesDone', { zones: zones, devices: moved }); });

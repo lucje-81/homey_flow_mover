@@ -200,7 +200,9 @@
     "switchHere": "Switch to this Homey",
     "switchBack": "Back to the other Homey",
     "switchHereConfirm": "Switch {n} flow(s): enable here and the bridge flow, disable on the other Homey?",
-    "switchBackConfirm": "Put {n} flow(s) back: enable on the other Homey, disable here and the bridge flow?"
+    "switchBackConfirm": "Put {n} flow(s) back: enable on the other Homey, disable here and the bridge flow?",
+    "zonesGrouped": "Group members ({n})",
+    "zonesGroupedHint": "These devices are in a device group. Homey doesn't allow moving them on their own: they are always in the zone of their group. They move along when the group is moved to its room."
   },
   "copy": "copy",
   "bridgeFolder": "Bridge to SHS",

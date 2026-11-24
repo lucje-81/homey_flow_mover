@@ -200,7 +200,9 @@
     "switchHere": "Omschakelen naar deze Homey",
     "switchBack": "Terug naar de andere Homey",
     "switchHereConfirm": "{n} flow(s) omschakelen: hier en de brugflow aan, op de andere Homey uit?",
-    "switchBackConfirm": "{n} flow(s) terugzetten: op de andere Homey aan, hier en de brugflow uit?"
+    "switchBackConfirm": "{n} flow(s) terugzetten: op de andere Homey aan, hier en de brugflow uit?",
+    "zonesGrouped": "Leden van een groep ({n})",
+    "zonesGroupedHint": "Deze toestellen zitten in een toestelgroep. Homey laat niet toe ze apart te verplaatsen: ze staan altijd in de zone van hun groep. Ze gaan mee wanneer de groep naar zijn kamer verplaatst wordt."
   },
   "copy": "kopie",
   "bridgeFolder": "Brug naar SHS",

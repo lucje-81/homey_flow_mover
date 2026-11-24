@@ -302,7 +302,22 @@ class FlowMoverApp extends Homey.App {
       .filter((z) => z.parent && !ctx.zoneMap[String(z.id).toLowerCase()])
       .map((z) => ({ id: String(z.id).toLowerCase(), path: show(ctx.src.zones, z.id), depth: M.zonePath(ctx.src.zones, z.id).length }))
       .sort((a, b) => a.depth - b.depth || a.path.localeCompare(b.path));
+    // Members of a device group can't be moved on their own (Homey: "Cannot change zone of a grouped
+    // device"): they follow their group. Find them via the groups here and the groups on the other Homey.
+    const groupOf = {};
+    for (const g of Object.values(ctx.dst.devices)) {
+      if (M.systemDriver(g) !== 'group') continue;
+      for (const r of g.refs || []) if (ctx.dst.devices[r]) groupOf[r] = g.name;
+    }
+    for (const g of Object.values(ctx.src.devices)) {
+      if (M.systemDriver(g) !== 'group' || !(ctx.deviceMatch[g.id] && ctx.deviceMatch[g.id].target)) continue;
+      for (const mem of g.members || []) {
+        const t = ctx.deviceMatch[mem] && ctx.deviceMatch[mem].target;
+        if (t && !groupOf[String(t).toLowerCase()]) groupOf[String(t).toLowerCase()] = g.name;
+      }
+    }
     const moves = [];
+    const grouped = [];
     for (const [srcId, m] of Object.entries(ctx.deviceMatch)) {
       if (!m.target) continue;
       const s = ctx.src.devices[srcId];
@@ -311,10 +326,14 @@ class FlowMoverApp extends Homey.App {
       const want = M.zonePath(ctx.src.zones, s.zone).map(M.norm).join('/');
       const have = M.zonePath(ctx.dst.zones, d.zone).map(M.norm).join('/');
       if (want === have) continue;
-      moves.push({ id: d.id, srcId, name: d.name, from: show(ctx.dst.zones, d.zone), to: show(ctx.src.zones, s.zone) });
+      const item = { id: d.id, srcId, name: d.name, from: show(ctx.dst.zones, d.zone), to: show(ctx.src.zones, s.zone) };
+      const group = groupOf[String(d.id).toLowerCase()];
+      if (group) grouped.push({ ...item, group });
+      else moves.push(item);
     }
     moves.sort((a, b) => a.to.localeCompare(b.to) || a.name.localeCompare(b.name));
-    return { create, moves };
+    grouped.sort((a, b) => a.group.localeCompare(b.group) || a.name.localeCompare(b.name));
+    return { create, moves, grouped };
   }
 
   /** Create the missing zones (same names, icons and nesting) and move the chosen devices into their zone. */
@@ -349,7 +368,8 @@ class FlowMoverApp extends Homey.App {
         await (await this.targetApi()).devices.updateDevice({ id: m.id, device: { zone } });
         results.push({ type: 'device', name: m.name, ok: true, to: m.to });
       } catch (err) {
-        results.push({ type: 'device', name: m.name, ok: false, error: err.message });
+        if (/group/i.test(err.message)) results.push({ type: 'device', name: m.name, ok: true, skipped: true, reason: 'grouped' });
+        else results.push({ type: 'device', name: m.name, ok: false, error: err.message });
       }
     }
     this.cache = {};

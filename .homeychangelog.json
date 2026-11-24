@@ -1,4 +1,8 @@
 {
+  "1.14.1": {
+    "en": "Rooms and zones: members of a device group are not moved on their own (Homey doesn't allow it); they follow their group",
+    "nl": "Kamers en zones: leden van een toestelgroep worden niet apart verplaatst (Homey laat dat niet toe); ze volgen hun groep"
+  },
   "1.14.0": {
     "en": "Bridge flows for triggers that stay on the other Homey (buttons via Homey Link), own folders for bridges on both Homeys, and a Switch over step",
     "nl": "Brugflows voor triggers die op de andere Homey blijven (knoppen via Homey Link), eigen mappen voor bruggen op beide Homeys, en een stap Omschakelen"
