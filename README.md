@@ -4,6 +4,8 @@ Copy your flows and advanced flows from one Homey (e.g. a Homey Pro 2023) to ano
 
 Homey has a hidden export/import in the web app (hold ALT on the "…" menu), but the imported flows still point to the device ids of the old Homey. A device that is added again on another Homey gets a new id, so those cards break. Flow Mover rewrites all ids for you.
 
+**Step-by-step user guide:** [English](docs/GUIDE.md) · [Nederlands](docs/HANDLEIDING.md)
+
 ## How it works
 
 Install the app on the Homey that should **receive** the flows (e.g. the Self-Hosted Server), then open **Apps → Flow Mover → Configure app**.
