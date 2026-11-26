@@ -59,6 +59,7 @@
     "noFolder": "No folder",
     "exists": "A flow with this name already exists on this Homey.",
     "issue_device": "Device not matched: {name}",
+    "issue_unknownDevice": "Card “{name}”: this device no longer exists on the Pro (old device id). Open the flow on the Pro, pick the device again in that card, save, click Refresh and move it again",
     "issue_app": "App not installed on this Homey: {name}",
     "issue_card": "Card does not exist on this Homey: {name}",
     "issue_zone": "Zone does not exist here yet: {name} (create the zones in step 4)",

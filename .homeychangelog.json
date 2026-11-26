@@ -94,5 +94,9 @@
   "1.0.0": {
     "en": "First version: copy flows and advanced flows from another Homey with automatic device and variable matching",
     "nl": "Eerste versie: flows en geavanceerde flows kopiëren van een andere Homey met automatische koppeling van toestellen en variabelen"
+  },
+  "1.15.4": {
+    "en": "Flows: reports device cards that point to a device that no longer exists on the Pro (old device id).",
+    "nl": "Flows: meldt toestelkaarten die verwijzen naar een toestel dat niet meer op de Pro bestaat (oude toestel-ID)."
   }
 }

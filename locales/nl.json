@@ -59,6 +59,7 @@
     "noFolder": "Geen map",
     "exists": "Een flow met deze naam bestaat al op deze Homey.",
     "issue_device": "Toestel niet gekoppeld: {name}",
+    "issue_unknownDevice": "Kaart “{name}”: dit toestel bestaat niet meer op de Pro (oude toestel-ID). Open de flow op de Pro, kies het toestel opnieuw in die kaart, bewaar, klik Vernieuwen en verhuis opnieuw",
     "issue_app": "App niet geïnstalleerd op deze Homey: {name}",
     "issue_card": "Kaart bestaat niet op deze Homey: {name}",
     "issue_zone": "Zone bestaat hier nog niet: {name} (maak de zones aan in stap 4)",
