@@ -1,4 +1,8 @@
 {
+  "1.15.3": {
+    "en": "Rooms and zones: members of a group that is here through Homey Link are moved normally",
+    "nl": "Kamers en zones: leden van een groep die hier via Homey Link staat, worden gewoon verplaatst"
+  },
   "1.15.2": {
     "en": "Diagnostics show how this Homey stores a device group; group members that could not be moved are reported",
     "nl": "Diagnose toont hoe deze Homey een toestelgroep bewaart; groepsleden die niet verplaatst konden worden, worden gemeld"

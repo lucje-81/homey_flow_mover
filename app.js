@@ -339,7 +339,9 @@ class FlowMoverApp extends Homey.App {
     }
     for (const g of Object.values(ctx.src.devices)) {
       const tg = M.systemDriver(g) === 'group' && ctx.deviceMatch[g.id] && ctx.deviceMatch[g.id].target;
-      if (!tg) continue;
+      // Only a real group here restricts its members; a group of the other Homey that is here through
+      // Homey Link is an ordinary device, and its members can be moved freely
+      if (!tg || M.systemDriver(ctx.dst.devices[String(tg).toLowerCase()] || {}) !== 'group') continue;
       for (const mem of g.members || []) {
         const t = ctx.deviceMatch[mem] && ctx.deviceMatch[mem].target;
         if (t) addMember(String(tg).toLowerCase(), g.name, t);
