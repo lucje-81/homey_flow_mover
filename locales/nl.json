@@ -10,7 +10,8 @@
     "noTargetToken": "Vul eerst een API-sleutel van deze Homey in.",
     "noLinkHomey": "Kies in stap 5 naar welke Homey de brugflows (Homey Link) moeten verwijzen.",
     "sourceWrite": "de API-sleutel van de andere Homey moet schrijfrechten op Flows hebben",
-    "groupRestore": "Leden konden niet teruggezet worden in de groep — controleer de groep"
+    "groupRestore": "Leden konden niet teruggezet worden in de groep — controleer de groep",
+    "missingPermission": "De API-sleutel van de andere Homey mist het recht “{permission}”. Maak een nieuwe sleutel aan met dat recht (zie “Hoe maak ik een API-sleutel?”) en plak hem hier."
   },
   "settings": {
     "title": "Flow-verhuizer",
@@ -208,5 +209,11 @@
   "copy": "kopie",
   "bridgeFolder": "Brug naar SHS",
   "bridgePrefix": "Brug: ",
-  "bridgeFolderHere": "Brug vanaf Pro"
+  "bridgeFolderHere": "Brug vanaf Pro",
+  "permissions": {
+    "flows": "Flows",
+    "devices": "Toestellen",
+    "logic": "Logica",
+    "zones": "Zones"
+  }
 }

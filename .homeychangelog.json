@@ -1,4 +1,8 @@
 {
+  "1.15.1": {
+    "en": "Connecting names the missing permission of the API key",
+    "nl": "Bij verbinden wordt het ontbrekende recht van de API-sleutel genoemd"
+  },
   "1.15.0": {
     "en": "Rooms and zones: group members are moved too (taken out of their group, moved, put back)",
     "nl": "Kamers en zones: groepsleden worden ook verplaatst (even uit hun groep, verplaatst, terug erin)"

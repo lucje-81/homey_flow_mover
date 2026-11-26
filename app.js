@@ -86,9 +86,21 @@ class FlowMoverApp extends Homey.App {
     if (token) this.homey.settings.set('token', String(token).trim());
     this.cache = {};
     const src = await this.getSource(true);
-    const [flows, advanced, devices] = await Promise.all([
-      src.flow.getFlows(), src.flow.getAdvancedFlows(), src.devices.getDevices(),
-    ]);
+    // Test each permission on its own, so a missing one can be named
+    const need = async (label, fn) => {
+      try {
+        return await fn();
+      } catch (err) {
+        throw new Error(/scope|forbidden|401|403/i.test(err.message)
+          ? this.homey.__('errors.missingPermission', { permission: this.homey.__(`permissions.${label}`) })
+          : err.message);
+      }
+    };
+    const flows = await need('flows', () => src.flow.getFlows());
+    const advanced = await need('flows', () => src.flow.getAdvancedFlows());
+    const devices = await need('devices', () => src.devices.getDevices());
+    await need('logic', () => src.logic.getVariables());
+    await need('zones', () => src.zones.getZones());
     return {
       address: a,
       flows: Object.keys(flows).length,

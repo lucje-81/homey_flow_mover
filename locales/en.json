@@ -10,7 +10,8 @@
     "noTargetToken": "Enter an API key of this Homey first.",
     "noLinkHomey": "Choose in step 5 which Homey the bridge flows (Homey Link) should start flows on.",
     "sourceWrite": "the API key of the other Homey needs write access to Flows",
-    "groupRestore": "Members could not be put back in the group — check the group"
+    "groupRestore": "Members could not be put back in the group — check the group",
+    "missingPermission": "The API key of the other Homey is missing the permission “{permission}”. Create a new key with that permission (see “How do I create an API key?”) and paste it here."
   },
   "settings": {
     "title": "Flow Mover",
@@ -208,5 +209,11 @@
   "copy": "copy",
   "bridgeFolder": "Bridge to SHS",
   "bridgePrefix": "Bridge: ",
-  "bridgeFolderHere": "Bridge from Pro"
+  "bridgeFolderHere": "Bridge from Pro",
+  "permissions": {
+    "flows": "Flows",
+    "devices": "Devices",
+    "logic": "Logic",
+    "zones": "Zones"
+  }
 }
