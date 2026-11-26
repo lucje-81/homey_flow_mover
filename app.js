@@ -938,13 +938,13 @@ class FlowMoverApp extends Homey.App {
         const enabled = keepEnabled ? flow.enabled !== false : false;
         const analysis = M.analyseFlow(flow, kind, ctx);
         const useBridge = bridge && analysis.bridge;
-        // Flows started by a bridge get their own folder here, so it's clear they are linked to the other Homey
-        const folder = useBridge ? await this.ensureNamedFolder(target, this.homey.__('bridgeFolderHere'), ctx) : await this.ensureFolder(flow.folder, ctx, folders);
         if (useBridge && !linkHomey) {
           const lt = await this.linkTargets();
           if (lt.targets.length === 1) { linkHomey = lt.targets[0]; this.homey.settings.set('linkHomey', linkHomey); }
         }
         if (useBridge && !linkHomey) throw new Error(this.homey.__('errors.noLinkHomey'));
+        // Flows started by a bridge get their own folder here, so it's clear they are linked to the other Homey
+        const folder = useBridge ? await this.ensureNamedFolder(target, this.homey.__('bridgeFolderHere'), ctx) : await this.ensureFolder(flow.folder, ctx, folders);
         const body = useBridge
           ? M.bridgedBody(flow, kind, analysis.bridge, ctx.idMap, folder, enabled)
           : M.flowBody(flow, kind, ctx.idMap, folder, enabled);

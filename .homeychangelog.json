@@ -98,5 +98,9 @@
   "1.15.4": {
     "en": "Flows: reports device cards that point to a device that no longer exists on the Pro (old device id).",
     "nl": "Flows: meldt toestelkaarten die verwijzen naar een toestel dat niet meer op de Pro bestaat (oude toestel-ID)."
+  },
+  "1.15.5": {
+    "en": "Bridge flows: the folder is only created once the Homey Link target is known.",
+    "nl": "Brugflows: de map wordt pas aangemaakt als de Homey Link-doel-Homey gekend is."
   }
 }

@@ -1,6 +1,6 @@
 {
   "id": "flow.mover",
-  "version": "1.15.4",
+  "version": "1.15.5",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
