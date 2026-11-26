@@ -143,18 +143,55 @@ If your Homey is set to Dutch, the folders are called "Brug naar SHS" and "Brug 
 
 After every fix: **Refresh** in the Flow Mover. If the broken flow already exists on the SHS, delete it there first and move it again.
 
-| Message or symptom | Cause | Solution |
-| --- | --- | --- |
-| Connect: "Missing Scopes" or a missing permission | The API key lacks a permission | Create a new key with the permissions from Preparation. |
-| Device not matched | No device with that name on the SHS, or several | Add it (through Link or directly) with the same name, or choose it yourself in step 3. |
-| Card … this device no longer exists on the Pro (old device id) | The device was once removed and added again; the card still points to the old one | Open the flow on the Pro, remove the card and add it again, save. |
-| On the SHS: "Card unavailable" | Usually the same as above, or the wrong match | Check in step 3 whether the device shows "in 1 flow(s)"; if not, see the previous row. |
-| Card does not exist on this Homey | App-specific card a Link device doesn't have (Growatt, Chint, buttons) | Add the device directly on the SHS and choose it in step 3, or let a bridge flow be created. |
-| App not installed | The flow uses an app missing on the SHS | Step 2: Install, or the update script for your own apps. |
-| Choose in step 5 which Homey the bridge flows … | The Pro doesn't know the SHS in Homey Link | Connect the SHS in Homey Link on the Pro and create one flow with "Start a flow" (see Preparation). |
-| Devices appear twice or in the wrong room | Outdated view | Refresh in the Flow Mover, or reload the Homey app. |
-| Lamps stay in the root zone | Group members that weren't recognised | Update to the latest version (1.15.3 or later) and run step 4 again. |
-| The script installs an old version | Local changes in the app folder | Use the latest version of the update script; it restores `app.json` and `package-lock.json` itself. |
+**Connect: "Missing Scopes" or a missing permission**
+
+- Cause: The API key lacks a permission.
+- Solution: Create a new key with the permissions from Preparation.
+
+**Device not matched**
+
+- Cause: No device with that name on the SHS, or several.
+- Solution: Add it (through Link or directly) with the same name, or choose it yourself in step 3.
+
+**Card … this device no longer exists on the Pro (old device id)**
+
+- Cause: The device was once removed and added again; the card still points to the old one.
+- Solution: Open the flow on the Pro, remove the card and add it again, save.
+
+**On the SHS: "Card unavailable"**
+
+- Cause: Usually the same as above, or the wrong match.
+- Solution: Check in step 3 whether the device shows "in 1 flow(s)"; if not, see above.
+
+**Card does not exist on this Homey**
+
+- Cause: App-specific card a Link device doesn't have (Growatt, Chint, buttons).
+- Solution: Add the device directly on the SHS and choose it in step 3, or let a bridge flow be created.
+
+**App not installed**
+
+- Cause: The flow uses an app missing on the SHS.
+- Solution: Step 2: Install, or the update script for your own apps.
+
+**Choose in step 5 which Homey the bridge flows …**
+
+- Cause: The Pro doesn't know the SHS in Homey Link.
+- Solution: Connect the SHS in Homey Link on the Pro and create one flow with "Start a flow" (see Preparation).
+
+**Devices appear twice or in the wrong room**
+
+- Cause: Outdated view.
+- Solution: Refresh in the Flow Mover, or reload the Homey app.
+
+**Lamps stay in the root zone**
+
+- Cause: Group members that weren't recognised.
+- Solution: Update to the latest version (1.15.3 or later) and run step 4 again.
+
+**The script installs an old version**
+
+- Cause: Local changes in the app folder.
+- Solution: Use the latest version of the update script; it restores `app.json` and `package-lock.json` itself.
 
 Still stuck? Open **Diagnostics (for support)** in step 5 and send that block.
 

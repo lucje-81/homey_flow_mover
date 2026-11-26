@@ -143,18 +143,55 @@ Staat je Homey in het Engels, dan heten de mappen “Bridge to SHS” en “Brid
 
 Na elke oplossing: **Vernieuwen** in de verhuizer. Bestaat de kapotte flow al op de SHS, verwijder hem daar eerst en zet hem opnieuw over.
 
-| Melding of symptoom | Oorzaak | Oplossing |
-| --- | --- | --- |
-| Verbinden: “Missing Scopes” of een ontbrekend recht | De API-sleutel mist een recht | Maak een nieuwe sleutel met de rechten uit Voorbereiding. |
-| Toestel niet gekoppeld | Geen toestel met die naam op de SHS, of meerdere | Voeg het toe (via Link of rechtstreeks) met dezelfde naam, of kies het zelf in stap 3. |
-| Kaart … bestaat niet meer op de Pro (oude toestel-ID) | Het toestel is ooit verwijderd en opnieuw toegevoegd; de kaart wijst nog naar het oude | Open de flow op de Pro, verwijder de kaart en voeg ze opnieuw toe, bewaar. |
-| Op de SHS: “Card unavailable” | Meestal hetzelfde als hierboven, of de verkeerde koppeling | Kijk in stap 3 of het toestel “in 1 flow(s)” toont; zo niet, zie de vorige rij. |
-| Kaart bestaat niet op deze Homey | App-specifieke kaart die een Link-toestel niet heeft (Growatt, Chint, knoppen) | Voeg het toestel rechtstreeks op de SHS toe en kies het in stap 3, of laat een brugflow maken. |
-| App niet geïnstalleerd | De flow gebruikt een app die op de SHS ontbreekt | Stap 2: Installeren, of het update-script voor je eigen apps. |
-| Kies in stap 5 naar welke Homey de brugflows … | De Pro kent de SHS niet in Homey Link | Verbind de SHS in Homey Link op de Pro en maak één flow met “Start een flow” (zie Voorbereiding). |
-| Toestellen staan dubbel of in de verkeerde kamer | Verouderde weergave | Vernieuwen in de verhuizer, of herlaad de Homey-app. |
-| Lampen blijven in de hoofdzone | Groepsleden die niet herkend werden | Bijwerken naar de laatste versie (1.15.3 of later) en stap 4 opnieuw. |
-| Het script installeert een oude versie | Lokale wijzigingen in de app-map | Laatste versie van het update-script gebruiken; het zet `app.json` en `package-lock.json` zelf terug. |
+**Verbinden: “Missing Scopes” of een ontbrekend recht**
+
+- Oorzaak: De API-sleutel mist een recht.
+- Oplossing: Maak een nieuwe sleutel met de rechten uit Voorbereiding.
+
+**Toestel niet gekoppeld**
+
+- Oorzaak: Geen toestel met die naam op de SHS, of meerdere.
+- Oplossing: Voeg het toe (via Link of rechtstreeks) met dezelfde naam, of kies het zelf in stap 3.
+
+**Kaart … bestaat niet meer op de Pro (oude toestel-ID)**
+
+- Oorzaak: Het toestel is ooit verwijderd en opnieuw toegevoegd; de kaart wijst nog naar het oude.
+- Oplossing: Open de flow op de Pro, verwijder de kaart en voeg ze opnieuw toe, bewaar.
+
+**Op de SHS: “Card unavailable”**
+
+- Oorzaak: Meestal hetzelfde als hierboven, of de verkeerde koppeling.
+- Oplossing: Kijk in stap 3 of het toestel “in 1 flow(s)” toont; zo niet, zie hierboven.
+
+**Kaart bestaat niet op deze Homey**
+
+- Oorzaak: App-specifieke kaart die een Link-toestel niet heeft (Growatt, Chint, knoppen).
+- Oplossing: Voeg het toestel rechtstreeks op de SHS toe en kies het in stap 3, of laat een brugflow maken.
+
+**App niet geïnstalleerd**
+
+- Oorzaak: De flow gebruikt een app die op de SHS ontbreekt.
+- Oplossing: Stap 2: Installeren, of het update-script voor je eigen apps.
+
+**Kies in stap 5 naar welke Homey de brugflows …**
+
+- Oorzaak: De Pro kent de SHS niet in Homey Link.
+- Oplossing: Verbind de SHS in Homey Link op de Pro en maak één flow met “Start een flow” (zie Voorbereiding).
+
+**Toestellen staan dubbel of in de verkeerde kamer**
+
+- Oorzaak: Verouderde weergave.
+- Oplossing: Vernieuwen in de verhuizer, of herlaad de Homey-app.
+
+**Lampen blijven in de hoofdzone**
+
+- Oorzaak: Groepsleden die niet herkend werden.
+- Oplossing: Bijwerken naar de laatste versie (1.15.3 of later) en stap 4 opnieuw.
+
+**Het script installeert een oude versie**
+
+- Oorzaak: Lokale wijzigingen in de app-map.
+- Oplossing: Laatste versie van het update-script gebruiken; het zet `app.json` en `package-lock.json` zelf terug.
 
 Kom je er niet uit, open dan in stap 5 **Diagnose (voor ondersteuning)** en stuur dat blok door.
 
