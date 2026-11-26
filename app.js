@@ -138,6 +138,15 @@ class FlowMoverApp extends Homey.App {
       withCards ? safe(api.flow.getFlowCardActions(), null) : null,
       safe(api.dashboards.getDashboards(), {}),
     ]);
+    // Diagnostics: how this Homey stores a device group (keys and member references)
+    if (side === 'target') {
+      const g = Object.values(devices || {}).find((d) => /group/i.test(String(d.driverId || d.driverUri || '')));
+      if (g) {
+        const raw = M.plain(g);
+        delete raw.capabilitiesObj; delete raw.images; delete raw.insights; delete raw.flags;
+        this.groupSample = JSON.stringify(raw).slice(0, 3000);
+      }
+    }
     const byId = (obj, pick) => Object.fromEntries(Object.values(obj || {}).map((x) => [String(x.id).toLowerCase(), pick(x)]));
     const data = {
       devices: byId(devices, (d) => {
@@ -290,6 +299,7 @@ class FlowMoverApp extends Homey.App {
     const cardList = ctx.dstCards ? [...ctx.dstCards] : [];
     const missingCards = [...new Set(flows.flatMap((f) => f.issues.filter((i) => i.kind === 'card').map((i) => i.id)))];
     const diag = {
+      groupSample: this.groupSample || null,
       cardsHere: cardList.length,
       sampleManager: cardList.filter((x) => /manager/.test(x)).slice(0, 8),
       sampleDevice: cardList.filter((x) => /device/.test(x)).slice(0, 8),

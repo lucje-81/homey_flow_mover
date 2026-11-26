@@ -582,6 +582,8 @@
           api('POST', '/zones', { deviceIds: ids }).then(function (res) {
             var bad = res.filter(function (r) { return !r.ok; });
             var moved = res.filter(function (r) { return r.ok && !r.skipped && r.type === 'device'; }).length;
+            var skipped = res.filter(function (r) { return r.skipped && r.reason === 'grouped'; });
+            if (skipped.length) H.alert(t('zonesSkippedGrouped', { n: skipped.length }) + '\n' + skipped.slice(0, 20).map(function (r) { return r.name; }).join(', '));
             var zones = res.filter(function (r) { return r.ok && r.type === 'zone'; }).length;
             if (bad.length) H.alert(bad.map(function (r) { return r.name + ': ' + r.error; }).join('\n'));
             return analyse().then(function () { $('zoneSummary').textContent = t('zonesDone', { zones: zones, devices: moved }); });

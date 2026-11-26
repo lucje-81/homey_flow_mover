@@ -1,4 +1,8 @@
 {
+  "1.15.2": {
+    "en": "Diagnostics show how this Homey stores a device group; group members that could not be moved are reported",
+    "nl": "Diagnose toont hoe deze Homey een toestelgroep bewaart; groepsleden die niet verplaatst konden worden, worden gemeld"
+  },
   "1.15.1": {
     "en": "Connecting names the missing permission of the API key",
     "nl": "Bij verbinden wordt het ontbrekende recht van de API-sleutel genoemd"

@@ -204,7 +204,8 @@
     "switchHereConfirm": "{n} flow(s) omschakelen: hier en de brugflow aan, op de andere Homey uit?",
     "switchBackConfirm": "{n} flow(s) terugzetten: op de andere Homey aan, hier en de brugflow uit?",
     "zonesGrouped": "Leden van een groep ({n}) — worden ook verplaatst",
-    "zonesGroupedHint": "Deze toestellen zitten in een toestelgroep. Homey laat een lid van een groep niet van zone veranderen, daarom haalt de verhuizer ze even uit hun groep, zet ze in hun kamer en voegt ze meteen weer toe (de groep blijft dezelfde)."
+    "zonesGroupedHint": "Deze toestellen zitten in een toestelgroep. Homey laat een lid van een groep niet van zone veranderen, daarom haalt de verhuizer ze even uit hun groep, zet ze in hun kamer en voegt ze meteen weer toe (de groep blijft dezelfde).",
+    "zonesSkippedGrouped": "{n} toestel(len) konden niet verplaatst worden omdat ze in een groep zitten die de verhuizer niet herkende. Stuur het blok Diagnose (stap 5) door voor ondersteuning."
   },
   "copy": "kopie",
   "bridgeFolder": "Brug naar SHS",

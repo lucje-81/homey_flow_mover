@@ -204,7 +204,8 @@
     "switchHereConfirm": "Switch {n} flow(s): enable here and the bridge flow, disable on the other Homey?",
     "switchBackConfirm": "Put {n} flow(s) back: enable on the other Homey, disable here and the bridge flow?",
     "zonesGrouped": "Group members ({n}) — are moved too",
-    "zonesGroupedHint": "These devices are in a device group. Homey doesn't let a group member change zone, so they are taken out of their group for a moment, moved to their room and put back right away (the group stays the same)."
+    "zonesGroupedHint": "These devices are in a device group. Homey doesn't let a group member change zone, so they are taken out of their group for a moment, moved to their room and put back right away (the group stays the same).",
+    "zonesSkippedGrouped": "{n} device(s) could not be moved because they are in a group the app did not recognise. Send the Diagnostics block (step 5) for support."
   },
   "copy": "copy",
   "bridgeFolder": "Bridge to SHS",
